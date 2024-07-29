@@ -4,7 +4,6 @@ import numpy as np
 import os
 import h5py
 import matplotlib.pyplot as plt
-import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -119,18 +118,7 @@ for epoch in range(num_epochs):  # Loop over each epoch
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}')
 
 
-#%%
-# Visualize validation dataset predictions
-x, y = next(iter(val_loader))  # Get a batch of validation data
-x = x.to(device)
-y = y.to(device)
-model.eval()
-with torch.no_grad():  # Disable gradient calculation for visualization
-    decoded_test_data = model(x)
-    decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
-    x = x.cpu()
-    y = y.cpu()
-# Save model parameters
+
 print('Saving model parameters...')
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
 model_dir = os.path.join(current_dir, 'batch32_lr01')
@@ -138,28 +126,3 @@ os.makedirs(model_dir, exist_ok=True)  # Create directory if it doesn't exist
 state_dict_name = 'model_weights'  # Base name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 torch.save(model.state_dict(), state_dict_path)  # Save the model state dictionary to file
-
-# Plot the results
-print('Plotting the results...')
-for i in range(10):
-    fig, axs = plt.subplots(3, 1, figsize=(15, 5))  # Create a figure with 3 subplots
-
-    fig.suptitle('Validation Traces')
-
-    axs[0].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
-    axs[0].tick_params(labelbottom=False)
-    axs[0].legend()
-    #axs[0].set_xlim(0, 1000)
-
-    axs[1].plot(decoded_test_data[i].reshape(-1), label='Denoised', color='mediumblue', linewidth=0.9)
-    axs[1].tick_params(labelbottom=False)
-    axs[1].legend()
-    #axs[1].set_xlim(0, 1000)
-
-    axs[2].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
-    axs[2].legend()
-    #axs[2].set_xlim(0, 1000)
-
-    plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
-    plt.show()
-
