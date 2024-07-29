@@ -76,7 +76,7 @@ model_dir = os.path.join(current_dir, 'batch32_lr01')
 state_dict_name = 'model_weights'  # Base name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
-model = UNet(1)
+model = UNet()
 model.load_state_dict(torch.load(state_dict_path))
 model.eval()
 
@@ -90,7 +90,10 @@ y = y.to(device)
 model.eval()
 with torch.no_grad():  # Disable gradient calculation for visualization
     decoded_test_data = model(x)
+    m = torch.nn.Softmax(dim=1)
+    decoded_test_data = m(decoded_test_data)
     decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
+    predition_class = decoded_test_data.argmax(axis=1)
     x = x.cpu()
     y = y.cpu()
 # Save model parameters
@@ -107,7 +110,7 @@ for i in range(10):
     axs[0].legend()
     #axs[0].set_xlim(0, 1000)
 
-    axs[1].plot(decoded_test_data[i].reshape(-1), label='Denoised', color='mediumblue', linewidth=0.9)
+    axs[1].plot(predition_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
     axs[1].tick_params(labelbottom=False)
     axs[1].legend()
     #axs[1].set_xlim(0, 1000)

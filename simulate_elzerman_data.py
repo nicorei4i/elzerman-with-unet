@@ -425,7 +425,7 @@ def main():
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
 
-    save_elzerman_traces(hdf5_file_path_train, n_traces_test)
+    save_elzerman_traces(hdf5_file_path_train, n_traces_train)
     save_elzerman_traces(hdf5_file_path_val, n_traces_val)
 
 

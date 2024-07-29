@@ -60,7 +60,9 @@ class SimDataset(Dataset):
         if self.scale_transform:  # Apply the scale transform if it exists
             clean_trace = self.scale_transform(clean_trace)
             noisy_trace = self.scale_transform(noisy_trace)
-
+        #clean_trace = clean_trace.reshape(-1)
+        #noisy_trace = noisy_trace.reshape(-1)
+        #print(np.shape(noisy_trace))
         return torch.Tensor(noisy_trace), torch.Tensor(clean_trace) # Convert the numpy array to a PyTorch tensor and return it
 
 
