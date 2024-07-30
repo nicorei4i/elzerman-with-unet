@@ -35,7 +35,7 @@ with h5py.File(hdf5_file_path_val, 'r') as file:  # Open the HDF5 file in read m
     print(val_data.shape)  # Print the validation data shape for verification
 
 # Define parameters for the noise and simulation
-noise_std = 0.1  # Standard deviation of Gaussian noise
+noise_std = 0.3  # Standard deviation of Gaussian noise
 T = 0.006  # Total simulation time in seconds
 N = 2
 n_samples = 10000
@@ -46,7 +46,7 @@ n_cycles = 2 #cycles per trace
 # interference_amps = [1.1, 1.1, 1.1]  # Amplitudes of the interference signals
 # interference_freqs = [50, 1000, 10 ** 4]  # Frequencies of the interference signals in Hz
 
-interference_amps = [0.1, 0.1, 0.1, 0.1]  # Amplitudes of the interference signals
+interference_amps = [0.3, 0.3, 0.3, 0.3]  # Amplitudes of the interference signals
 interference_freqs = [50, 200, 600, 1000]  # Frequencies of the interference signals in Hz
 
 # Create an instance of the Noise class with the specified parameters
@@ -72,7 +72,7 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  # Dat
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'batch32_lr01')
+model_dir = os.path.join(current_dir, 'batch1k')
 state_dict_name = 'model_weights'  # Base name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
@@ -121,4 +121,3 @@ for i in range(10):
 
     plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
 plt.show()
-

@@ -62,15 +62,15 @@ class bottleneck_block(torch.nn.Module):
 class UNet(torch.nn.Module):
     def __init__(self):
         super(UNet, self).__init__()
-        self.encoder1 = encoder_block(1, 16)
-        self.encoder2 = encoder_block(16, 32)
-        self.encoder3 = encoder_block(32, 64)
+        self.encoder1 = encoder_block(1, 8)
+        self.encoder2 = encoder_block(8, 16)
+        self.encoder3 = encoder_block(16, 32)
         
-        self.bottleneck = bottleneck_block(64, 64)
+        self.bottleneck = bottleneck_block(32, 32)
         
-        self.decoder1 = decoder_block(64, 32)
-        self.decoder2 = decoder_block(32, 16)
-        self.decoder4 = decoder_block(16, 2)
+        self.decoder1 = decoder_block(32, 16)
+        self.decoder2 = decoder_block(16, 8)
+        self.decoder4 = decoder_block(8, 2)
         
         
     def forward(self, x):

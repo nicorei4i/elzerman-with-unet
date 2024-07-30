@@ -347,16 +347,16 @@ def main():
     lambda_in = 3500.0
     lambda_out = 2400.0
     
-    noise_std = 0.1  # Standard deviation of Gaussian noise
+    noise_std = 0.3  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
     print(f'Simulation time per trace: {T}s\n\n')
 
-    interference_amps = [0.1, 0.1, 0.1, 0.1]  # Amplitudes of the interference signals
+    interference_amps = [0.3, 0.3, 0.3, 0.3]  # Amplitudes of the interference signals
     interference_freqs = [50, 200, 600, 1000]  # Frequencies of the interference signals in Hz
 
     
     signal_amp = 1.0
-    n_traces_train = 100
+    n_traces_train = 1000
     n_traces_val = 100
     n_traces_test = 100
 
@@ -398,7 +398,7 @@ def main():
                 # Explicitly delete variables and force garbage collection
                 del data
                 gc.collect()
-                remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n_traces_val-i-1), 2)
+                remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
                 printProgressBar(i+1, n_traces_val, f'\rSimulating dummy traces... Time remaining: {remaining_time}s', 'complete', length=25)
                 
             end_time = time.perf_counter()
@@ -418,7 +418,7 @@ def main():
                 # Explicitly delete variables and force garbage collection
                 del data
                 gc.collect()
-                remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n_traces_val-i-1), 2)
+                remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
                 
                 printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time}s', 'complete', length=25)
                 

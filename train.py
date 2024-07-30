@@ -37,7 +37,7 @@ with h5py.File(hdf5_file_path_val, 'r') as file:  # Open the HDF5 file in read m
     print(val_data.shape)  # Print the validation data shape for verification
 
 # Define parameters for the noise and simulation
-noise_std = 0.1  # Standard deviation of Gaussian noise
+noise_std = 0.3  # Standard deviation of Gaussian noise
 T = 0.006  # Total simulation time in seconds
 N = 2
 n_samples = 10000
@@ -48,7 +48,7 @@ n_cycles = 2 #cycles per trace
 # interference_amps = [1.1, 1.1, 1.1]  # Amplitudes of the interference signals
 # interference_freqs = [50, 1000, 10 ** 4]  # Frequencies of the interference signals in Hz
 
-interference_amps = [0.1, 0.1, 0.1, 0.1]  # Amplitudes of the interference signals
+interference_amps = [0.3, 0.3, 0.3, 0.3]  # Amplitudes of the interference signals
 interference_freqs = [50, 200, 600, 1000]  # Frequencies of the interference signals in Hz
 
 
@@ -67,7 +67,7 @@ dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transfo
 val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)  # Validation dataset
 
 # Create DataLoader
-batch_size = 32  # Batch size for loading data
+batch_size = 256  # Batch size for loading data
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the dataset
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the validation dataset
 
@@ -92,7 +92,7 @@ val_line, = ax.plot(val_losses, label='val_loss')
 ax.legend()
 #plt.show(block=False)
 
-num_epochs = 25  # Number of epochs for training, adjust based on the final loss
+num_epochs = 100  # Number of epochs for training, adjust based on the final loss
 for epoch in range(num_epochs):  # Loop over each epoch
     # Training loop
     model.train()
@@ -149,5 +149,4 @@ os.makedirs(model_dir, exist_ok=True)  # Create directory if it doesn't exist
 state_dict_name = 'model_weights'  # Base name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 torch.save(model.state_dict(), state_dict_path)  # Save the model state dictionary to file
-
-plt.show(block=True)
+print('done')
