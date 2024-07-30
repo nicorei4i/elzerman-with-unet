@@ -17,7 +17,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-file_name = 'sim_elzerman_traces_train'  # Base name for the training HDF5 file
+file_name = 'sim_elzerman_traces_train_1k'  # Base name for the training HDF5 file
 val_name = 'sim_elzerman_traces_val'  # Base name for the validation HDF5 file
 
 # Construct full paths for the HDF5 files
