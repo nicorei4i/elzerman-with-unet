@@ -72,11 +72,12 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  # Dat
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'batch1k_denoise')
+model_dir = os.path.join(current_dir, 'batch32_lr01')
 state_dict_name = 'model_weights'  # Base name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
 model = UNet()
+model = nn.DataParallel(model)
 model.load_state_dict(torch.load(state_dict_path))
 model.eval()
 

@@ -11,13 +11,15 @@ from model import UNet
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
+
+
 print('GPU available: ', torch.cuda.is_available())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-file_name = 'sim_elzerman_traces_train_1k'  # Base name for the training HDF5 file
+file_name = 'sim_elzerman_traces_train'  # Base name for the training HDF5 file
 val_name = 'sim_elzerman_traces_val'  # Base name for the validation HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -40,8 +42,8 @@ with h5py.File(hdf5_file_path_val, 'r') as file:  # Open the HDF5 file in read m
 noise_std = 0.3  # Standard deviation of Gaussian noise
 T = 0.006  # Total simulation time in seconds
 N = 2
-n_samples = 10000
-dt = T/(10000)
+n_samples = 8192
+dt = T/(8192)
 n_cycles = 2 #cycles per trace
 
 # Define parameters for interference signals
@@ -67,15 +69,16 @@ dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transfo
 val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)  # Validation dataset
 
 # Create DataLoader
-batch_size = 256  # Batch size for loading data
+batch_size = 1024  # Batch size for loading data
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the dataset
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the validation dataset
 
 # Initialize model, loss function, and optimizer
 model = UNet().to(device)  # Instance of the Conv1DAutoencoder model
-
-print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+model = nn.DataParallel(model)
+#print(sum(p.numel() for p in model.parameters() if p.requires_grad))
 #criterion = nn.CrossEntropyLoss()  # Cross Entropy loss function
+
 criterion = nn.CrossEntropyLoss().to(device)  # Mean Squared Error loss function
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  # Adam optimizer with learning rate 0.001
 

@@ -47,9 +47,9 @@ def generate_elzerman_signal(lambdas, times, voltages, N, signal_amp, T=9.0e-3, 
     V_L, V_W, V_R, V_U = voltages
 
     t_rep = t_L + t_W + t_R + t_U
-    n_samples = int(10000 / N)
-    dt = N * t_rep/(10000)
-    continuous_states_total = np.zeros(10000, dtype=np.float64)
+    n_samples = int(8192 / N)
+    dt = N * t_rep/(8192)
+    continuous_states_total = np.zeros(8192, dtype=np.float64)
     n_blip = 0
 
     state = 0
@@ -232,12 +232,12 @@ def generate_elzerman_signal(lambdas, times, voltages, N, signal_amp, T=9.0e-3, 
     return n_blip, blip_mask, continuous_states_total
 
 @njit
-def generate_dummy_trace(t_load, t_read, t_unload, amp=False, N=10000):
+def generate_dummy_trace(t_load, t_read, t_unload, amp=False, N=8192):
     
     times = np.array([t_load, t_read, t_unload])
     t_rep = np.sum(times)
 
-    dt = t_rep/(10000)
+    dt = t_rep/(8192)
     
     #times = times/t_rep * N
     t_load, t_read, t_unload = times
@@ -247,7 +247,7 @@ def generate_dummy_trace(t_load, t_read, t_unload, amp=False, N=10000):
     
     times = [0, t_in_rand, t_out_rand, t_rep]
     states = [0, 1, 0, 0]
-    continuous_states = np.zeros(10000)
+    continuous_states = np.zeros(8192)
     for j in range(len(times) - 1):
         start_index = int(times[j] / dt)
         end_index = int(times[j+1] / dt)
@@ -372,15 +372,15 @@ def main():
     hdf5_file_path_mask = os.path.join(current_dir, '{}.hdf5'.format(mask_file))
 
 
-    _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
+    """ _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
     trace = noise(trace, T, noise_std, interference_amps, interference_freqs)
-    times = np.arange(0, 10000, 1)
+    times = np.arange(0, 8192, 1)
     fig, ax = plt.subplots(1, 1)
     ax.plot(trace, label='Simulated test data')
     ax.plot(times[mask==1], trace[mask==1], color='red', linewidth=5, alpha=0.5, label='Actual anomalies')
     ax.legend()
     ax.set_title('Preview Trace')
-    plt.show(block=True)
+    plt.show(block=True) """
 
 
     def save_dummy_traces(hdf5_file_path, n): 
@@ -451,10 +451,10 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    #save_elzerman_traces(hdf5_file_path_train, 1000)
+    save_elzerman_traces(hdf5_file_path_train, 100)
     #save_dummy_traces(hdf5_file_path_train, 1000)
-    #save_elzerman_traces(hdf5_file_path_val, 100)
-    save_elzerman_traces_and_masks(hdf5_file_path_test, hdf5_file_path_mask, 100)
+    save_elzerman_traces(hdf5_file_path_val, 100)
+    #save_elzerman_traces_and_masks(hdf5_file_path_test, hdf5_file_path_mask, 100)
    
 
 if __name__ == '__main__':
