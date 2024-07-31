@@ -1,0 +1,9 @@
+GPU available:  True
+(1000, 8192)
+(100, 8192)
+Creating datasets...
+5896
+Start training...
+Epoch [1/25], Train Loss: 0.6466, Validation Loss: 0.5029Epoch [2/25], Train Loss: 0.3903, Validation Loss: 0.3301Epoch [3/25], Train Loss: 0.3318, Validation Loss: 0.3372Epoch [4/25], Train Loss: 0.3265, Validation Loss: 0.3215Epoch [5/25], Train Loss: 0.3268, Validation Loss: 0.3227Epoch [6/25], Train Loss: 0.3206, Validation Loss: 0.3195Epoch [7/25], Train Loss: 0.3194, Validation Loss: 0.3209Epoch [8/25], Train Loss: 0.3237, Validation Loss: 0.3256Epoch [9/25], Train Loss: 0.3217, Validation Loss: 0.3199Epoch [10/25], Train Loss: 0.3216, Validation Loss: 0.3193Epoch [11/25], Train Loss: 0.3191, Validation Loss: 0.3186Epoch [12/25], Train Loss: 0.3189, Validation Loss: 0.3192Epoch [13/25], Train Loss: 0.3183, Validation Loss: 0.3180Epoch [14/25], Train Loss: 0.3183, Validation Loss: 0.3184Epoch [15/25], Train Loss: 0.3193, Validation Loss: 0.3186Epoch [16/25], Train Loss: 0.3181, Validation Loss: 0.3177Epoch [17/25], Train Loss: 0.3181, Validation Loss: 0.3186Epoch [18/25], Train Loss: 0.3184, Validation Loss: 0.3177Epoch [19/25], Train Loss: 0.3178, Validation Loss: 0.3174Epoch [20/25], Train Loss: 0.3176, Validation Loss: 0.3181Epoch [21/25], Train Loss: 0.3176, Validation Loss: 0.3183Epoch [22/25], Train Loss: 0.3177, Validation Loss: 0.3178Epoch [23/25], Train Loss: 0.3180, Validation Loss: 0.3172Epoch [24/25], Train Loss: 0.3184, Validation Loss: 0.3180Epoch [25/25], Train Loss: 0.3185, Validation Loss: 0.3173
+Saving model parameters...
+done

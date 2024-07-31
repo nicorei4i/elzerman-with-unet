@@ -25,6 +25,8 @@ class SimDataset(Dataset):
         file = h5py.File(file_path, 'r')  # Open the HDF5 file in read mode
         self.keys = list(file.keys())  # Get the list of keys (datasets) in the file
         random.shuffle(self.keys)  # Shuffle the keys to randomize the order of access
+        self.traces = {key: np.array(file[key]) for key in self.keys}
+
         file.close()  # Close the HDF5 file
 
     def __len__(self):
@@ -46,10 +48,11 @@ class SimDataset(Dataset):
         Returns:
         torch.Tensor: The sample as a tensor.
         """
-        file = h5py.File(self.file_path, 'r')  # Open the HDF5 file in read mode
-        key = self.keys[index]  # Get the key corresponding to the given index
-        clean_trace = np.array(file[key]) # Load the data for the given key and convert it to a numpy array
-        file.close()  # Close the HDF5 file
+        # file = h5py.File(self.file_path, 'r')  # Open the HDF5 file in read mode
+        # key = self.keys[index]  # Get the key corresponding to the given index
+        # clean_trace = np.array(file[key]) # Load the data for the given key and convert it to a numpy array
+        # file.close()  # Close the HDF5 file
+        clean_trace = self.traces[self.keys[index]]
 
         if self.noise_transform:
             noisy_trace = self.noise_transform(clean_trace)

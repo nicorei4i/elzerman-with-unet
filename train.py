@@ -10,16 +10,18 @@ from model import UNet
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
+import time
 
 # Check if GPU is available
 print('GPU available: ', torch.cuda.is_available())
 
 # Set device to GPU if available, else CPU
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(device)
 
 # Set up directory paths
 current_dir = os.getcwd()  
-file_name = 'sim_elzerman_traces_train'  
+file_name = 'sim_elzerman_traces_train_10k'  
 val_name = 'sim_elzerman_traces_val'  
 
 # Construct full paths for the HDF5 files
@@ -65,13 +67,12 @@ dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transfo
 val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)  
 
 # Create DataLoaders
-batch_size = 64  
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)  
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  
+batch_size = 32  
+train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
 
 # Initialize model, loss function, and optimizer
 model = UNet().to(device)  
-model = nn.DataParallel(model)
 print(sum(p.numel() for p in model.parameters() if p.requires_grad))
 
 criterion = nn.CrossEntropyLoss()  
@@ -81,25 +82,26 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)
 print('Start training...')
 train_losses = []
 val_losses = []
-plt.ion()
-fig, ax = plt.subplots(1, 1)
-ax.set_xlabel('Epoch')
-ax.set_ylabel('Loss')
-train_line, = ax.plot(train_losses, label='train_loss')
-val_line, = ax.plot(val_losses, label='val_loss')
-ax.legend()
+# plt.ion()
+# fig, ax = plt.subplots(1, 1)
+# ax.set_xlabel('Epoch')
+# ax.set_ylabel('Loss')
+# train_line, = ax.plot(train_losses, label='train_loss')
+# val_line, = ax.plot(val_losses, label='val_loss')
+# ax.legend()
 
-num_epochs = 25  
+num_epochs = 25
+start = time.time()
 for epoch in range(num_epochs):  
     model.train()
     train_loss = 0.0
     for batch_x, batch_y in train_loader:  
+        optimizer.zero_grad()
         batch_x = batch_x.to(device)
         batch_y = batch_y.to(device).squeeze(1).long()
 
         output = model(batch_x)  
         loss = criterion(output, batch_y)  
-        optimizer.zero_grad()  
         loss.backward()  
         optimizer.step()  
 
@@ -119,17 +121,18 @@ for epoch in range(num_epochs):
     val_loss /= len(val_loader.dataset)
     val_losses.append(val_loss)
 
-    train_line.set_ydata(train_losses)
-    train_line.set_xdata(np.arange(1, epoch+2, 1))
-    val_line.set_ydata(val_losses)
-    val_line.set_xdata(np.arange(1, epoch+2, 1))
-    ax.relim()
-    ax.autoscale_view()
-    fig.canvas.draw()
-    fig.canvas.flush_events() 
+    # train_line.set_ydata(train_losses)
+    # train_line.set_xdata(np.arange(1, epoch+2, 1))
+    # val_line.set_ydata(val_losses)
+    # val_line.set_xdata(np.arange(1, epoch+2, 1))
+    # ax.relim()
+    # ax.autoscale_view()
+    # fig.canvas.draw()
+    # fig.canvas.flush_events() 
 
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}', end='\r')
 
+print(f"Finished Training in {(time.time() - start):.1f}")
 print()
 print('Saving model parameters...')
 model_dir = os.path.join(current_dir, 'batch32_lr01')

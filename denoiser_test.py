@@ -17,12 +17,12 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
-mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
+file_name = 'sim_elzerman_traces_test_10k'  # Name for the test HDF5 file
+#mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
 hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))  # Test file path
-hdf5_file_path_masks = os.path.join(current_dir, '{}.hdf5'.format(mask_name))  # Mask file path
+#hdf5_file_path_masks = os.path.join(current_dir, '{}.hdf5'.format(mask_name))  # Mask file path
 
 # Read data from the test HDF5 file
 with h5py.File(hdf5_file_path, 'r') as file:
@@ -31,11 +31,11 @@ with h5py.File(hdf5_file_path, 'r') as file:
     print(test_data.shape)  # Print the data shape for verification
 
 # Read data from the mask HDF5 file
-with h5py.File(hdf5_file_path_masks, 'r') as file:
+""" with h5py.File(hdf5_file_path_masks, 'r') as file:
     all_keys = file.keys()  # Get all keys (datasets) in the HDF5 file
     mask_data = np.array([file[key] for key in all_keys])  # Read data and store in a numpy array
     print(mask_data.shape)  # Print the data shape for verification
-
+ """
 # Define time indices
 t_L, t_W, t_R, t_U = 0.5e-3, 0.0, 1.0e-3, 1.5e-3  # Time intervals in seconds
 times = np.array([t_L, t_W, t_R, t_U])
@@ -68,22 +68,21 @@ scaler.fit_from_hdf5(hdf5_file_path)  # Fit the scaler using data from the test 
 # Create instances of the SimDataset class for validation datasets
 print('Creating datasets...')
 val_dataset = SimDataset(hdf5_file_path, scale_transform=scaler, noise_transform=noise_transform)  # Validation dataset
-mask_dataset = SimDataset(hdf5_file_path_masks, scale_transform=None, noise_transform=None)  # Mask dataset
+#mask_dataset = SimDataset(hdf5_file_path_masks, scale_transform=None, noise_transform=None)  # Mask dataset
 
 # Create DataLoader
 batch_size = 32  # Batch size for loading data
 test_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)  # DataLoader for validation dataset
-mask_loader = DataLoader(mask_dataset, batch_size=batch_size, shuffle=False)  # DataLoader for mask dataset
+#mask_loader = DataLoader(mask_dataset, batch_size=batch_size, shuffle=False)  # DataLoader for mask dataset
 
 # Model setup
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'batch1k_denoise_ksize4')  # Directory for model weights
+model_dir = os.path.join(current_dir, 'batch10k')  # Directory for model weights
 state_dict_name = 'model_weights'  # Name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
 # Load the model
 model = UNet()
-model = nn.DataParallel(model)
 model.load_state_dict(torch.load(state_dict_path))
 model.eval()
 
@@ -173,4 +172,4 @@ print(f'Precision: {precision}')
 print(f'Recall: {recall}')
 print(f'F1 Score: {f1}')
 
-plt.show()
+#plt.show()

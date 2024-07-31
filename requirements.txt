@@ -1,0 +1,7 @@
+torch
+torchvision
+numpy
+numba
+scikit-learn
+h5py
+matplotlib
