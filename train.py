@@ -19,8 +19,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Set up directory paths
 current_dir = os.getcwd()  
-file_name = 'sim_elzerman_traces_train_1k'  
-val_name = 'sim_elzerman_traces_val_100'  
+file_name = 'sim_elzerman_traces_train'  
+val_name = 'sim_elzerman_traces_val'  
 
 # Construct full paths for the HDF5 files
 hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))  
