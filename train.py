@@ -19,7 +19,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-file_name = 'sim_elzerman_traces_train'  # Base name for the training HDF5 file
+file_name = 'sim_elzerman_traces_train_1k'  # Base name for the training HDF5 file
 val_name = 'sim_elzerman_traces_val'  # Base name for the validation HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -69,17 +69,16 @@ dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transfo
 val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)  # Validation dataset
 
 # Create DataLoader
-batch_size = 1024  # Batch size for loading data
+batch_size = 32  # Batch size for loading data
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the dataset
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the validation dataset
 
 # Initialize model, loss function, and optimizer
 model = UNet().to(device)  # Instance of the Conv1DAutoencoder model
 model = nn.DataParallel(model)
-#print(sum(p.numel() for p in model.parameters() if p.requires_grad))
-#criterion = nn.CrossEntropyLoss()  # Cross Entropy loss function
+print(sum(p.numel() for p in model.parameters() if p.requires_grad))
 
-criterion = nn.CrossEntropyLoss().to(device)  # Mean Squared Error loss function
+criterion = nn.CrossEntropyLoss()  # Cross Entropy loss function
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  # Adam optimizer with learning rate 0.001
 
 # Training loop with validation
@@ -95,7 +94,7 @@ val_line, = ax.plot(val_losses, label='val_loss')
 ax.legend()
 #plt.show(block=False)
 
-num_epochs = 100  # Number of epochs for training, adjust based on the final loss
+num_epochs = 25  # Number of epochs for training, adjust based on the final loss
 for epoch in range(num_epochs):  # Loop over each epoch
     # Training loop
     model.train()

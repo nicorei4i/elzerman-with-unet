@@ -38,8 +38,8 @@ with h5py.File(hdf5_file_path_val, 'r') as file:  # Open the HDF5 file in read m
 noise_std = 0.3  # Standard deviation of Gaussian noise
 T = 0.006  # Total simulation time in seconds
 N = 2
-n_samples = 10000
-dt = T/(10000)
+n_samples = 8192
+dt = T/(8192)
 n_cycles = 2 #cycles per trace
 
 # Define parameters for interference signals
