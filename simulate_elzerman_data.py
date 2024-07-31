@@ -453,8 +453,9 @@ def main():
 
     #save_elzerman_traces(hdf5_file_path_train, 1000)
     #save_dummy_traces(hdf5_file_path_train, 1000)
+    save_dummy_traces(hdf5_file_path_val, 100)
     #save_elzerman_traces(hdf5_file_path_val, 100)
-    save_elzerman_traces_and_masks(hdf5_file_path_test, hdf5_file_path_mask, 1000)
+    #save_elzerman_traces_and_masks(hdf5_file_path_test, hdf5_file_path_mask, 1000)
    
 
 if __name__ == '__main__':
