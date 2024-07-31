@@ -15,12 +15,14 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-#file_name = 'sim_elzerman_traces_train'  # Base name for the training HDF5 file
-val_name = 'sim_elzerman_traces_val'  # Base name for the validation HDF5 file
+file_name = 'sim_elzerman_traces_test'  # Base name for the training HDF5 file
+mask_name = 'sim_elzerman_test_masks'  # Base name for the validation HDF5 file
 
 # Construct full paths for the HDF5 files
 #hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))  # Training file path
-hdf5_file_path_val = os.path.join(current_dir, '{}.hdf5'.format(val_name))  # Validation file path
+hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))  # Validation file path
+hdf5_file_path_masks = os.path.join(current_dir, '{}.hdf5'.format(mask_name))  # Validation file path
+
 
 # Read data from the training HDF5 file
 """ with h5py.File(hdf5_file_path, 'r') as file:  # Open the HDF5 file in read mode
@@ -29,14 +31,35 @@ hdf5_file_path_val = os.path.join(current_dir, '{}.hdf5'.format(val_name))  # Va
     print(data.shape)  # Print the data shape for verification
  """
 # Read data from the validation HDF5 file
-with h5py.File(hdf5_file_path_val, 'r') as file:  # Open the HDF5 file in read mode
+with h5py.File(hdf5_file_path, 'r') as file:  # Open the HDF5 file in read mode
     all_keys = file.keys()  # Get all keys (datasets) in the HDF5 file
-    val_data = np.array([file[key] for key in all_keys])  # Read data from each dataset and store in a numpy array
-    print(val_data.shape)  # Print the validation data shape for verification
+    test_data = np.array([file[key] for key in all_keys])  # Read data from each dataset and store in a numpy array
+    print(test_data.shape)  # Print the validation data shape for verification
+
+with h5py.File(hdf5_file_path_masks, 'r') as file:  # Open the HDF5 file in read mode
+    all_keys = file.keys()  # Get all keys (datasets) in the HDF5 file
+    mask_data = np.array([file[key] for key in all_keys])  # Read data from each dataset and store in a numpy array
+    print(mask_data.shape)  # Print the validation data shape for verification
+
+
+t_L = 0.5e-3
+t_W = 0.0
+t_R = 1.0e-3
+t_U = 1.5e-3
+times = np.array([t_L, t_W, t_R, t_U])
+trace_duration = np.sum(times)
+times = np.array([t_L, t_L+t_W, t_L+t_W+t_R, t_L+t_W+t_R+t_U])
+n_samples = 8192
+times_indices = times * n_samples/trace_duration
+times_indices = times_indices.astype(np.int64)
+
+start_read, end_read = times_indices[1], times_indices[2]
+
+
 
 # Define parameters for the noise and simulation
 noise_std = 0.3  # Standard deviation of Gaussian noise
-T = 0.006  # Total simulation time in seconds
+T = trace_duration  # Total simulation time in seconds
 N = 2
 n_samples = 8192
 dt = T/(8192)
@@ -53,20 +76,21 @@ interference_freqs = [50, 200, 600, 1000]  # Frequencies of the interference sig
 noise_transform = Noise(n_samples, T, noise_std, interference_amps, interference_freqs)
 
 # Create an instance of the MinMaxScalerTransform class
-train_scaler = MinMaxScalerTransform()
-val_scaler = MinMaxScalerTransform()
+scaler = MinMaxScalerTransform()
 # Fit the scaler using data from the training HDF5 file
 #train_scaler.fit_from_hdf5(hdf5_file_path)
-val_scaler.fit_from_hdf5(hdf5_file_path_val)
+scaler.fit_from_hdf5(hdf5_file_path)
 # Create instances of the SimDataset class for training and validation datasets
 print('Creating datasets...')
 ###dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform)  # Training dataset
-val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)  # Validation dataset
+val_dataset = SimDataset(hdf5_file_path, scale_transform=scaler, noise_transform=noise_transform)  # Validation dataset
+mask_dataset = SimDataset(hdf5_file_path_masks, scale_transform=None, noise_transform=None)  # Validation dataset
 
 # Create DataLoader
 batch_size = 32  # Batch size for loading data
 #train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the dataset
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)  # DataLoader for the validation dataset
+test_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)  # DataLoader for the validation dataset
+mask_loader = DataLoader(mask_dataset, batch_size=batch_size, shuffle=False)  # DataLoader for the validation dataset
 
 
 
@@ -85,7 +109,8 @@ model.eval()
 
 
 # Visualize validation dataset predictions
-x, y = next(iter(val_loader))  # Get a batch of validation data
+x, y = next(iter(test_loader))  # Get a batch of validation data
+mask, _ = next(iter(mask_loader))
 x = x.to(device)
 y = y.to(device)
 model.eval()
@@ -115,6 +140,7 @@ for i in range(10):
 
     axs[1].plot(predition_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
     axs[1].tick_params(labelbottom=False)
+    axs[1].plot(predition_class[i][mask[i]==1], color='r')
     axs[1].legend()
     #axs[1].set_xlim(0, 1000)
 
@@ -128,6 +154,54 @@ for i in range(10):
     #axs[2].set_xlim(0, 1000)
 
     plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
-plt.show()
+plt.show(block=False)
+
+nfn = 0
+nfp = 0
+ntn = 0 
+ntp = 0
+
+def invert(arr):
+    where_0 = np.where(arr == 0)
+    where_1 = np.where(arr == 1)
+
+    arr[where_0] = 1
+    arr[where_1] = 0
+
+    return arr
+
+with torch.no_grad():  # Disable gradient calculation for validation
+    for batch_x, batch_y in test_loader:  # Loop over each batch of validation data
+        decoded_test_data = model(batch_x)
+        batch_y  = batch_y.numpy()
+        batch_y = batch_y.squeeze(1)
+        m = torch.nn.Softmax(dim=1)
+        decoded_test_data = m(decoded_test_data)
+        decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
+        predition_class = decoded_test_data.argmax(axis=1)
+
+        for i, pred_trace in enumerate(predition_class):                   
+            
+            selection = invert(pred_trace[start_read:end_read])
+            current_mask = invert(batch_y[i, :][start_read:end_read])
 
 
+            if selection.any() and current_mask.any():
+                ntp += 1
+            elif selection.any() and not current_mask.any():
+                nfp += 1
+            elif not (selection.any()) and (current_mask.any()):
+                nfn += 1
+            elif not (selection.any()) and not (current_mask.any()):
+                ntn += 1  
+
+cm = np.array([[ntp, nfp], [nfn, ntn]])
+accuracy = (ntp + ntn) / (ntp + ntn + nfn + nfp)
+precision = ntp / (ntp + nfp)
+recall = ntp / (ntp + nfn)
+f1 = 2 * precision*recall/(precision+recall)
+print(cm)
+print(f'Accuracy: {accuracy}')
+print(f'Precision: {precision}')
+print(f'Recall: {recall}')
+print(f'F1 Score: {f1}')

@@ -55,7 +55,7 @@ class SimDataset(Dataset):
             noisy_trace = self.noise_transform(clean_trace)
         else:
             noisy_trace = clean_trace.copy()
-            print('No noise transform! Data will be labeled to itself!')
+            #print('No noise transform! Data will be labeled to itself!')
 
         if self.scale_transform:  # Apply the scale transform if it exists
             clean_trace = self.scale_transform(clean_trace)
