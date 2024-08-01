@@ -17,7 +17,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-file_name = 'sim_elzerman_traces_test_10k'  # Name for the test HDF5 file
+file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
 #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -82,8 +82,8 @@ state_dict_name = 'model_weights'  # Name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
 # Load the model
-model = UNet()
-model.load_state_dict(torch.load(state_dict_path))
+model = UNet().to(device)
+model.load_state_dict(torch.load(state_dict_path, map_location=device))
 model.eval()
 
 # Visualize validation dataset predictions
