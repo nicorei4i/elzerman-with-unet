@@ -17,7 +17,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.getcwd()  # Get the current working directory
-file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
+file_name = 'sim_elzerman_traces_test_10k'  # Name for the test HDF5 file
 #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -138,7 +138,9 @@ def invert(arr):
 # Validate the model
 with torch.no_grad():  # Disable gradient calculation for validation
     for batch_x, batch_y in test_loader:  # Loop over each batch of validation data
+        batch_x = batch_x.to(device)
         decoded_test_data = model(batch_x)
+        decoded_test_data = decoded_test_data.cpu()
         batch_y = batch_y.numpy()
         batch_y = batch_y.squeeze(1)
         m = torch.nn.Softmax(dim=1)
