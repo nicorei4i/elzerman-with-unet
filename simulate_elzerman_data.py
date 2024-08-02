@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 import gc
 from numba import njit
-
+from scipy.optimize import curve_fit
 
 # possible states: empty (0), spin up (1), spin down (-1)
 # possible transitions: tunneling in (up and down), tunneling out (up and down)(, decay (up to down))
@@ -309,9 +309,10 @@ def noise(trace, sim_t, sigma, amps, freqs):
     for i, amp in enumerate(amps):
         interference_noise += (amp * np.sin(2 * np.pi * freqs[i] * t + phi_0) + white_noise + pink_sigma * pink_noise)
       
-        
-    noisy_trace = trace + white_noise + pink_noise + interference_noise
-    return noisy_trace
+    total_noise = white_noise + pink_noise + interference_noise
+    snr = (np.max(trace)-np.min(trace))/np.std(total_noise)
+    noisy_trace = trace + total_noise
+    return noisy_trace, snr
 
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
@@ -346,12 +347,12 @@ def main():
     
     lambda_in = 3500.0
     lambda_out = 2400.0
-    
-    noise_std = 0.3  # Standard deviation of Gaussian noise
+    s=0.3
+    noise_std = s  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
     print(f'Simulation time per trace: {T}s\n\n')
 
-    interference_amps = [0.3, 0.3, 0.3, 0.3]  # Amplitudes of the interference signals
+    interference_amps = [s, s, s, s]  # Amplitudes of the interference signals
     interference_freqs = [50, 200, 600, 1000]  # Frequencies of the interference signals in Hz
 
     
@@ -371,16 +372,17 @@ def main():
     hdf5_file_path_val = os.path.join(current_dir, '{}.hdf5'.format(val_file))
     hdf5_file_path_mask = os.path.join(current_dir, '{}.hdf5'.format(mask_file))
 
-
-    """ _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
-    trace = noise(trace, T, noise_std, interference_amps, interference_freqs)
+    _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
+    trace, snr = noise(trace, T, noise_std, interference_amps, interference_freqs)
+    print('Signal to noise: ', snr)
     times = np.arange(0, 8192, 1)
-    fig, ax = plt.subplots(1, 1)
+    fig, (ax, bx) = plt.subplots(2, 1)
     ax.plot(trace, label='Simulated test data')
     ax.plot(times[mask==1], trace[mask==1], color='red', linewidth=5, alpha=0.5, label='Actual anomalies')
     ax.legend()
     ax.set_title('Preview Trace')
-    plt.show(block=True) """
+    bx.hist(trace, bins=150)
+    plt.show(block=True) 
 
 
     def save_dummy_traces(hdf5_file_path, n): 
@@ -451,11 +453,11 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_elzerman_traces(hdf5_file_path_train, 10000)
+    #save_elzerman_traces(hdf5_file_path_train, 100)
     #save_dummy_traces(hdf5_file_path_train, 1000)
     #save_dummy_traces(hdf5_file_path_val, 100)
     #save_elzerman_traces(hdf5_file_path_val, 100)
-    save_elzerman_traces(hdf5_file_path_test, 10000)
+    #save_elzerman_traces(hdf5_file_path_test, 10000)
     #save_elzerman_traces_and_masks(hdf5_file_path_test, hdf5_file_path_mask, 1000)
    
 

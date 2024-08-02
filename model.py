@@ -4,7 +4,7 @@ from torchvision import models
 from torch.nn.functional import relu
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
-pool_size = 4
+pool_size = 8
 
 class encoder_block(torch.nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -30,7 +30,7 @@ class bottleneck_block(torch.nn.Module):
         super(bottleneck_block, self).__init__()
         self.conv1 = torch.nn.Conv1d(in_channels, out_channels, 3, padding=1)
         self.conv2 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
-        self.conv3 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
+        #self.conv3 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
         
         self.relu = torch.nn.ReLU()
 
@@ -39,8 +39,8 @@ class bottleneck_block(torch.nn.Module):
         x = self.relu(x)
         x = self.conv2(x)
         x = self.relu(x)
-        x = self.conv3(x)
-        x = self.relu(x)
+        #x = self.conv3(x)
+        #x = self.relu(x)
         
         return x
 
@@ -52,7 +52,7 @@ class decoder_block(torch.nn.Module):
         
         self.conv1 = torch.nn.Conv1d(in_channels + out_channels, out_channels, 3, padding=1)
         self.conv2 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
-        self.conv3 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
+        #self.conv3 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
         
 
         self.relu = torch.nn.ReLU()
@@ -63,8 +63,8 @@ class decoder_block(torch.nn.Module):
         x = self.relu(x)
         x = self.conv2(x)
         x = self.relu(x)    
-        x = self.conv3(x)
-        x = self.relu(x)       
+        #x = self.conv3(x)
+        #x = self.relu(x)       
 
 
         return x
@@ -75,13 +75,13 @@ class UNet(torch.nn.Module):
     def __init__(self):
         super(UNet, self).__init__()
         self.encoder1 = encoder_block(1, 4).to(device)
-        self.encoder2 = encoder_block(4, 8).to(device)
-        self.encoder3 = encoder_block(8, 16).to(device)
+        self.encoder2 = encoder_block(4, 16).to(device)
+        self.encoder3 = encoder_block(16, 32).to(device)
         
-        self.bottleneck = bottleneck_block(16, 16).to(device)
+        self.bottleneck = bottleneck_block(32, 32).to(device)
         
-        self.decoder1 = decoder_block(16, 8).to(device)
-        self.decoder2 = decoder_block(8, 4).to(device)
+        self.decoder1 = decoder_block(32, 16).to(device)
+        self.decoder2 = decoder_block(16, 4).to(device)
         self.decoder4 = decoder_block(4, 2).to(device)
         
         
