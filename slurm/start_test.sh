@@ -4,7 +4,7 @@
 #SBATCH --mem=8GB
 #SBATCH --gres=gpu:1
 #SBATCH --job-name="Elzerman Testing"
-#SBATCH --time=0-00:10:00
+#SBATCH --time=0-00:50:00
 #SBATCH --begin=now
 #SBATCH --signal=TERM@120
 #SBATCH --output=/home/md334167/elzerman-with-unet/logs/%j_%n_%x.txt

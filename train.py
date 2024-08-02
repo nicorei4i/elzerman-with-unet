@@ -22,7 +22,7 @@ def main():
 
     # Set up directory paths
     current_dir = os.getcwd()  
-    file_name = 'sim_elzerman_traces_train'  
+    file_name = 'sim_elzerman_traces_train_10k'  
     val_name = 'sim_elzerman_traces_val'  
 
     # Construct full paths for the HDF5 files
@@ -80,7 +80,7 @@ def main():
     print(sum(p.numel() for p in model.parameters() if p.requires_grad))
 
     criterion = nn.CrossEntropyLoss()  
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
+    optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)  
 
 
     def train_model(train_loader, val_loader):
@@ -89,7 +89,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 100
+        num_epochs = 25
         start = time.time()
         for epoch in range(num_epochs):  
             model.train()
@@ -134,14 +134,14 @@ def main():
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
 
-    noise_sigs = np.linspace(0.01, 0.5, 5)
+    noise_sigs = np.linspace(0.1, 0.5, 5)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader = get_loaders(s)
         train_model(train_loader, val_loader)
 
     print('Saving model parameters...')
-    model_dir = os.path.join(current_dir, 'batch32_lr01')
+    model_dir = os.path.join(current_dir, 'batchsnr10k')
     os.makedirs(model_dir, exist_ok=True)  
     state_dict_name = 'model_weights'  
     state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  

@@ -20,7 +20,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current working directory
-file_name = 'sim_elzerman_traces_val'  # Name for the test HDF5 file
+file_name = 'sim_elzerman_traces_test_10k'  # Name for the test HDF5 file
 #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -73,7 +73,7 @@ def get_loaders(s):
 
 # Model setup
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'batch32_lr01')  # Directory for model weights
+model_dir = os.path.join(current_dir, 'batchsnr10k')  # Directory for model weights
 state_dict_name = 'model_weights'  # Name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
@@ -204,14 +204,16 @@ def get_scores(test_loader):
 scores = []
 snrs = []
 interference_freqs = [50, 200, 600, 1000]  
-noise_sigs = np.linspace(0.001, 0.5, 20)
+noise_sigs = np.linspace(0.001, 0.5, 10)
 for s in noise_sigs: 
     print(s)
     loader = get_loaders(s)
-    plot(loader)
+    #plot(loader)
     interference_amps = np.ones(4) * s  
     snrs.append(get_snr(T, s, interference_amps, interference_freqs))
-    scores.append(get_scores(loader))
+    score = get_scores(loader)
+    print(score)
+    scores.append(score)
 #%%
 scores = np.array(scores)
 fig, ax = plt.subplots(1, 1)
@@ -219,6 +221,10 @@ ax.scatter(snrs, scores[:, 0], label='precision')
 ax.scatter(snrs, scores[:, 1], label='recall')
 ax.set_xscale('log')
 ax.set_yscale('log')
+
+np.save('snrs.npy', snrs)
+np.save('scores.npy', scores)
+
 
 
 ax.legend()
