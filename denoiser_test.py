@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from model import UNet
+from UNet_model import UNet
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
@@ -20,7 +20,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current working directory
-file_name = 'sim_elzerman_traces_test_10k'  # Name for the test HDF5 file
+file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
 #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -120,7 +120,7 @@ def plot(test_loader):
         axs[3].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
         axs[3].legend()
         plt.show()
-        plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
+        #plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
 
 
 def get_snr(sim_t, sigma, amps, freqs):
@@ -204,11 +204,11 @@ def get_scores(test_loader):
 scores = []
 snrs = []
 interference_freqs = [50, 200, 600, 1000]  
-noise_sigs = np.linspace(0.001, 0.5, 10)
+noise_sigs = np.linspace(0.5, 2, 10)
 for s in noise_sigs: 
     print(s)
     loader = get_loaders(s)
-    #plot(loader)
+    plot(loader)
     interference_amps = np.ones(4) * s  
     snrs.append(get_snr(T, s, interference_amps, interference_freqs))
     score = get_scores(loader)

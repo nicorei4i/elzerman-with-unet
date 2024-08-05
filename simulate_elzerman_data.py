@@ -357,20 +357,7 @@ def main():
 
     
     signal_amp = 1.0
-    n_traces_train = 1000
-    n_traces_val = 100
-    n_traces_test = 100
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    train_file = 'sim_elzerman_traces_train'
-    test_file = 'sim_elzerman_traces_test'
-    val_file = 'sim_elzerman_traces_val'
-    mask_file = 'sim_elzerman_test_masks'
-    
-    hdf5_file_path_train = os.path.join(current_dir, '{}.hdf5'.format(train_file))
-    hdf5_file_path_test = os.path.join(current_dir, '{}.hdf5'.format(test_file))
-    hdf5_file_path_val = os.path.join(current_dir, '{}.hdf5'.format(val_file))
-    hdf5_file_path_mask = os.path.join(current_dir, '{}.hdf5'.format(mask_file))
 
     _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
     trace, snr = noise(trace, T, noise_std, interference_amps, interference_freqs)
@@ -385,8 +372,11 @@ def main():
     plt.show(block=True) 
 
 
-    def save_dummy_traces(hdf5_file_path, n): 
-
+    def save_dummy_traces(file_name, n): 
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        trace_dir = os.path.join(current_dir, 'traces')
+        hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
+        
         with h5py.File(hdf5_file_path, 'w') as file:
             start_time = time.perf_counter()
             for i in range(n):
@@ -406,7 +396,11 @@ def main():
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
 
-    def save_elzerman_traces(hdf5_file_path, n):
+    def save_elzerman_traces(file_name, n):
+         current_dir = os.path.dirname(os.path.abspath(__file__))
+         trace_dir = os.path.join(current_dir, 'traces')
+         hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
+
          with h5py.File(hdf5_file_path, 'w') as file:
             start_time = time.perf_counter()
             for i in range(n):
@@ -427,7 +421,11 @@ def main():
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
 
-    def save_elzerman_traces_and_masks(hdf5_file_path, hdf5_file_path_masks, n):
+    def save_elzerman_traces_and_masks(file_name, hdf5_file_path_masks, n):
+         current_dir = os.path.dirname(os.path.abspath(__file__))
+         trace_dir = os.path.join(current_dir, 'traces')
+         hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
+
          mask_file = h5py.File(hdf5_file_path_masks, 'w')
          with h5py.File(hdf5_file_path, 'w') as file:
             start_time = time.perf_counter()
@@ -453,13 +451,10 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    #save_elzerman_traces(hdf5_file_path_train, 100)
-    #save_dummy_traces(hdf5_file_path_train, 1000)
-    #save_dummy_traces(hdf5_file_path_val, 100)
-    #save_elzerman_traces(hdf5_file_path_val, 100)
-    #save_elzerman_traces(hdf5_file_path_test, 10000)
-    #save_elzerman_traces_and_masks(hdf5_file_path_test, hdf5_file_path_mask, 1000)
-   
+    save_elzerman_traces('sim_elzerman_traces_train', 100)
+    save_elzerman_traces('sim_elzerman_traces_val', 100)
+    save_elzerman_traces('sim_elzerman_traces_test', 100)
+    
 
 if __name__ == '__main__':
     main()

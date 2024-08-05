@@ -2,7 +2,7 @@
 import torch
 import h5py
 import matplotlib.pyplot as plt
-from model import UNet
+from UNet_model import UNet
 
 Y_TRAIN_PATH = "sim_elzerman_traces_train.hdf5"
 
