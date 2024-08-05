@@ -6,12 +6,15 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from UNet_model import UNet
+from unet_model import UNet
+from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
+from pathlib import Path
+import pickle
 
 print('GPU available: ', torch.cuda.is_available())
 
@@ -19,12 +22,13 @@ print('GPU available: ', torch.cuda.is_available())
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
-current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current working directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+trace_dir = os.path.join(current_dir, 'traces')
 file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
 #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
-hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))  # Test file path
+hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  # Test file path
 #hdf5_file_path_masks = os.path.join(current_dir, '{}.hdf5'.format(mask_name))  # Mask file path
 
 # Read data from the test HDF5 file
@@ -73,12 +77,13 @@ def get_loaders(s):
 
 # Model setup
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'batchsnr10k')  # Directory for model weights
+model_dir = os.path.join(current_dir, 'aenc_weights')  # Directory for model weights
 state_dict_name = 'model_weights'  # Name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
 # Load the model
-model = UNet().to(device)
+#model = UNet().to(device)
+model = Conv1DAutoencoder().to(device)
 model.load_state_dict(torch.load(state_dict_path, map_location=device))
 model.eval()
 
@@ -90,10 +95,10 @@ def plot(test_loader):
     model.eval()
     with torch.no_grad():  # Disable gradient calculation for visualization
         decoded_test_data = model(x)
-        m = torch.nn.Softmax(dim=1)
-        decoded_test_data = m(decoded_test_data)
-        decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
-        prediction_class = decoded_test_data.argmax(axis=1)
+        # m = torch.nn.Softmax(dim=1)
+        # decoded_test_data = m(decoded_test_data)
+        # decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
+        # prediction_class = decoded_test_data.argmax(axis=1)
         
         x = x.cpu()
         y = y.cpu()
@@ -109,17 +114,19 @@ def plot(test_loader):
         axs[0].tick_params(labelbottom=False)
         axs[0].legend()
 
-        axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
-        axs[1].tick_params(labelbottom=False)
-        axs[1].legend()
+        # axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
+        # axs[1].tick_params(labelbottom=False)
+        # axs[1].legend()
 
-        axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        #axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[2].plot(decoded_test_data[i, 0, :], label='denoised', color='mediumblue', linewidth=0.9)
+        
         axs[2].tick_params(labelbottom=False)
         axs[2].legend()
 
         axs[3].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
         axs[3].legend()
-        plt.show()
+        plt.show(block=False)
         #plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
 
 
@@ -175,13 +182,15 @@ def get_scores(test_loader):
             decoded_test_data = decoded_test_data.cpu()
             batch_y = batch_y.numpy()
             batch_y = batch_y.squeeze(1)
-            m = torch.nn.Softmax(dim=1)
-            decoded_test_data = m(decoded_test_data)
-            decoded_test_data = decoded_test_data.cpu().numpy()
-            prediction_class = decoded_test_data.argmax(axis=1)
-
+            # m = torch.nn.Softmax(dim=1)
+            # decoded_test_data = m(decoded_test_data)
+            # decoded_test_data = decoded_test_data.cpu().numpy()
+            # prediction_class = decoded_test_data.argmax(axis=1)
+            prediction_class = decoded_test_data.numpy().squeeze(1)
             for i, pred_trace in enumerate(prediction_class):                   
-                selection = invert(pred_trace[start_read:end_read])
+                #selection = invert(pred_trace[start_read:end_read])
+                selection = [pred_trace[start_read:end_read] < 0.001]
+                selection = np.array(selection)
                 current_mask = invert(batch_y[i, :][start_read:end_read])
                 
                 if selection.any() and current_mask.any():
@@ -199,12 +208,13 @@ def get_scores(test_loader):
         precision = ntp / (ntp + nfp)
         recall = ntp / (ntp + nfn)
         f1 = 2 * precision * recall / (precision + recall)
-        return precision, recall 
-    
-scores = []
+        return precision, recall, cm 
+cms = []
+precisions = []
+recalls = []
 snrs = []
 interference_freqs = [50, 200, 600, 1000]  
-noise_sigs = np.linspace(0.5, 2, 10)
+noise_sigs = np.linspace(0.01, 0.5, 1)
 for s in noise_sigs: 
     print(s)
     loader = get_loaders(s)
@@ -213,21 +223,49 @@ for s in noise_sigs:
     snrs.append(get_snr(T, s, interference_amps, interference_freqs))
     score = get_scores(loader)
     print(score)
-    scores.append(score)
+    precisions.append(score[0])
+    recalls.append(score[1])
+    cms.append(score[2])
+
+precisions = np.array(precisions)
+recalls = np.array(recalls)
+cms = np.array(cms)
+
 #%%
-scores = np.array(scores)
 fig, ax = plt.subplots(1, 1)
-ax.scatter(snrs, scores[:, 0], label='precision')
-ax.scatter(snrs, scores[:, 1], label='recall')
-ax.set_xscale('log')
-ax.set_yscale('log')
+ax.scatter(snrs, precisions, label='precision')
+ax.scatter(snrs, recalls, label='recall')
+#ax.set_xscale('log')
+#ax.set_yscale('log')
 
-np.save('snrs.npy', snrs)
-np.save('scores.npy', scores)
+scores = {
+    'snr':snrs,
+    'precision': precisions,
+    'recall': recalls,
+    'cm': cms
+}
 
 
+pickle_name = 'aenc_scores'
+pickle_dir = os.path.join(current_dir, 'results')  # Directory for model weights
+os.makedirs(pickle_dir, exist_ok=True)  
+pickle_path = os.path.join(pickle_dir, '{}.pkl'.format(pickle_name))  
+pickle_path = Path(pickle_path)
+
+def check_and_rename(file_path: Path, add: int = 0) -> Path:
+    original_file_path = file_path
+    if add != 0:
+        file_path = file_path.with_stem(file_path.stem + "_" + str(add))
+    if not os.path.isfile(file_path):
+        return file_path
+    else:
+        return check_and_rename(original_file_path, add + 1)
+
+
+pickle_path = check_and_rename(pickle_path, add=0)
+with open(pickle_path, 'wb') as f:
+            pickle.dump(scores, f)
 
 ax.legend()
 plt.show()
-print(snrs)
 print(scores)

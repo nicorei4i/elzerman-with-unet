@@ -7,7 +7,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.sgd
-from UNet_model import UNet
+from unet_model import UNet
+from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
@@ -22,12 +23,14 @@ def main():
 
     # Set up directory paths
     current_dir = os.getcwd()  
-    file_name = 'sim_elzerman_traces_train_10k'  
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    trace_dir = os.path.join(current_dir, 'traces')
+    file_name = 'sim_elzerman_traces_train'  
     val_name = 'sim_elzerman_traces_val'  
 
     # Construct full paths for the HDF5 files
-    hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))  
-    hdf5_file_path_val = os.path.join(current_dir, '{}.hdf5'.format(val_name))  
+    hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
+    hdf5_file_path_val = os.path.join(trace_dir, '{}.hdf5'.format(val_name))  
 
     # Read data from the training HDF5 file
     with h5py.File(hdf5_file_path, 'r') as file:  
@@ -76,10 +79,11 @@ def main():
     batch_size = 32  
 
     # Initialize model, loss function, and optimizer
-    model = UNet().to(device)  
+    model = Conv1DAutoencoder().to(device)  
     print(sum(p.numel() for p in model.parameters() if p.requires_grad))
 
-    criterion = nn.CrossEntropyLoss()  
+    #criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCELoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)  
 
 
@@ -97,7 +101,8 @@ def main():
             for batch_x, batch_y in train_loader:  
                 optimizer.zero_grad()
                 batch_x = batch_x.to(device)
-                batch_y = batch_y.to(device).squeeze(1).long()
+                batch_y = batch_y.to(device)
+                #.squeeze(1).long()
 
                 output = model(batch_x)  
                 loss = criterion(output, batch_y)  
@@ -113,7 +118,8 @@ def main():
             with torch.no_grad():  
                 for batch_x, batch_y in val_loader:  
                     batch_x = batch_x.to(device)
-                    batch_y = batch_y.to(device).squeeze(1).long()
+                    batch_y = batch_y.to(device)
+                    #.squeeze(1).long()
                     output = model(batch_x)  
                     loss = criterion(output, batch_y)  
                     val_loss += loss.item() * batch_x.size(0)
@@ -134,14 +140,14 @@ def main():
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
 
-    noise_sigs = np.linspace(0.1, 0.5, 5)
+    noise_sigs = np.linspace(0.01, 0.5, 1)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader = get_loaders(s)
         train_model(train_loader, val_loader)
 
     print('Saving model parameters...')
-    model_dir = os.path.join(current_dir, 'batchsnr10k')
+    model_dir = os.path.join(current_dir, 'aenc_weights')
     os.makedirs(model_dir, exist_ok=True)  
     state_dict_name = 'model_weights'  
     state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
