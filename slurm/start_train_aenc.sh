@@ -31,4 +31,4 @@ unset __conda_setup
 conda activate DL
 
 # run the training
-python -u /home/md334167/elzerman-with-unet/unet_train.py
+python -u /home/md334167/elzerman-with-unet/aenc_train.py

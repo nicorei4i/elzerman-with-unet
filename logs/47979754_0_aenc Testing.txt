@@ -1,0 +1,2 @@
+GPU available:  True
+(10000, 8192)

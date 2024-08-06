@@ -22,20 +22,20 @@ print('GPU available: ', torch.cuda.is_available())
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Directory setup
-current_dir = os.path.dirname(os.path.abspath(__file__))
-trace_dir = os.path.join(current_dir, 'traces')
-file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
-#mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# trace_dir = os.path.join(current_dir, 'traces')
+# file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
+# #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
-# Construct full paths for the HDF5 files
-hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  # Test file path
-#hdf5_file_path_masks = os.path.join(current_dir, '{}.hdf5'.format(mask_name))  # Mask file path
+# # Construct full paths for the HDF5 files
+# hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  # Test file path
+# #hdf5_file_path_masks = os.path.join(current_dir, '{}.hdf5'.format(mask_name))  # Mask file path
 
-# Read data from the test HDF5 file
-with h5py.File(hdf5_file_path, 'r') as file:
-    all_keys = file.keys()  # Get all keys (datasets) in the HDF5 file
-    test_data = np.array([file[key] for key in all_keys])  # Read data and store in a numpy array
-    print(test_data.shape)  # Print the data shape for verification
+# # Read data from the test HDF5 file
+# with h5py.File(hdf5_file_path, 'r') as file:
+#     all_keys = file.keys()  # Get all keys (datasets) in the HDF5 file
+#     test_data = np.array([file[key] for key in all_keys], dtype=np.float32)  # Read data and store in a numpy array
+#     print(test_data.shape)  # Print the data shape for verification
 
 # Define time indices
 t_L, t_W, t_R, t_U = 0.5e-3, 0.0, 1.0e-3, 1.5e-3  # Time intervals in seconds
@@ -56,38 +56,38 @@ dt = T / n_samples
 n_cycles = 2  
 batch_size = 32
 
-def get_loaders(s):
-# Define parameters for interference signals
-    print('Noise Amp: ', s)
-    interference_amps = np.ones(4) * s  
-    interference_freqs = [50, 200, 600, 1000]  
+# def get_loaders(s):
+# # Define parameters for interference signals
+#     print('Noise Amp: ', s)
+#     interference_amps = np.ones(4) * s  
+#     interference_freqs = [50, 200, 600, 1000]  
 
-    # Create instances of Noise and MinMaxScalerTransform classes
-    noise_transform = Noise(n_samples, T, noise_std, interference_amps, interference_freqs)
-    scaler = MinMaxScalerTransform()
+#     # Create instances of Noise and MinMaxScalerTransform classes
+#     noise_transform = Noise(n_samples, T, noise_std, interference_amps, interference_freqs)
+#     scaler = MinMaxScalerTransform()
     
-    # Fit scalers using data from the HDF5 files
-    scaler.fit_from_hdf5(hdf5_file_path)
+#     # Fit scalers using data from the HDF5 files
+#     scaler.fit_from_hdf5(hdf5_file_path)
 
-    # Create instances of SimDataset class for training and validation datasets
-    print('Creating datasets...')
-    dataset = SimDataset(hdf5_file_path, scale_transform=scaler, noise_transform=noise_transform)  
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    return loader
+#     # Create instances of SimDataset class for training and validation datasets
+#     print('Creating datasets...')
+#     dataset = SimDataset(hdf5_file_path, scale_transform=scaler, noise_transform=noise_transform)  
+#     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+#     return loader
 
-# Model setup
-current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'aenc_weights')  # Directory for model weights
-state_dict_name = 'model_weights'  # Name for the model state dictionary
-state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
+# # Model setup
+# current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
+# model_dir = os.path.join(current_dir, 'aenc_weights')  # Directory for model weights
+# state_dict_name = 'model_weights'  # Name for the model state dictionary
+# state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
-# Load the model
-#model = UNet().to(device)
-model = Conv1DAutoencoder().to(device)
-model.load_state_dict(torch.load(state_dict_path, map_location=device))
-model.eval()
+# # Load the model
+# #model = UNet().to(device)
+# model = Conv1DAutoencoder().to(device)
+# model.load_state_dict(torch.load(state_dict_path, map_location=device, weights_only=True))
+# model.eval()
 
-def plot(test_loader):
+def plot(model, test_loader):
     # Visualize validation dataset predictions
     x, y = next(iter(test_loader))  # Get a batch of validation data
     x = x.to(device)
@@ -131,12 +131,14 @@ def plot(test_loader):
         #plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
 
 
-def get_snr(sim_t, sigma, amps, freqs):
+def get_snr(sim_t, sigma):
 
     shape = 8192
     T = sim_t
-    amps = amps
-    freqs = freqs
+    
+    amps = np.ones(4) * sigma  
+    freqs = [50, 200, 600, 1000]  
+
     white_sigma = sigma
     pink_sigma = 0.1 * sigma
 
@@ -169,57 +171,20 @@ def invert(arr):
     where_1 = np.where(arr == 1)
     arr[where_0] = 1
     arr[where_1] = 0
-    return arr
+    return np.array(arr, dtype=np.int32)
 
 
-def get_scores(test_loader):
-    # Initialize confusion matrix components
-    nfn, nfp, ntn, ntp = 0, 0, 0, 0
-    # Validate the model
-    with torch.no_grad():  # Disable gradient calculation for validation
-        for batch_x, batch_y in test_loader:  # Loop over each batch of validation data
-            batch_x = batch_x.to(device)
-            decoded_test_data = model(batch_x)
-            decoded_test_data = decoded_test_data.cpu()
-            batch_y = batch_y.numpy()
-            batch_y = batch_y.squeeze(1)
-            # m = torch.nn.Softmax(dim=1)
-            # decoded_test_data = m(decoded_test_data)
-            # decoded_test_data = decoded_test_data.cpu().numpy()
-            # prediction_class = decoded_test_data.argmax(axis=1)
-            prediction_class = decoded_test_data.numpy().squeeze(1)
-            for i, pred_trace in enumerate(prediction_class):                   
-                #selection = invert(pred_trace[start_read:end_read])
-                selection = [pred_trace[start_read:end_read] < 0.001]
-                selection = np.array(selection)
-                current_mask = invert(batch_y[i, :][start_read:end_read])
-                
-                if selection.any() and current_mask.any():
-                    ntp += 1
-                elif selection.any() and not current_mask.any():
-                    nfp += 1
-                elif not selection.any() and current_mask.any():
-                    nfn += 1
-                elif not selection.any() and not current_mask.any():
-                    ntn += 1
 
-        # Compute and display metrics
-        cm = np.array([[ntp, nfp], [nfn, ntn]])
-        accuracy = (ntp + ntn) / (ntp + ntn + nfn + nfp)
-        precision = ntp / (ntp + nfp)
-        recall = ntp / (ntp + nfn)
-        f1 = 2 * precision * recall / (precision + recall)
-        return precision, recall, cm 
 cms = []
 precisions = []
 recalls = []
 snrs = []
 interference_freqs = [50, 200, 600, 1000]  
-noise_sigs = np.linspace(0.01, 2, 15)
+noise_sigs = np.linspace(0.01, 2, 10)
 for s in noise_sigs: 
     print(s)
     loader = get_loaders(s)
-    plot(loader)
+    #plot(loader)
     interference_amps = np.ones(4) * s  
     snrs.append(get_snr(T, s, interference_amps, interference_freqs))
     score = get_scores(loader)

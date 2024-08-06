@@ -12,6 +12,8 @@ from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
 import time
+from test_lib import get_snr, get_scores_aenc, save_scores
+
 def main():
     # Check if GPU is available
     print('GPU available: ', torch.cuda.is_available())
@@ -24,17 +26,19 @@ def main():
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_elzerman_traces_train'  
-    val_name = 'sim_elzerman_traces_val'  
+    file_name = 'sim_elzerman_traces_train100'  
+    val_name = 'sim_elzerman_traces_val100'  
+    test_name = 'sim_elzerman_traces_test100'  
 
     # Construct full paths for the HDF5 files
     hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
     hdf5_file_path_val = os.path.join(trace_dir, '{}.hdf5'.format(val_name))  
+    hdf5_file_path_test = os.path.join(trace_dir, '{}.hdf5'.format(test_name))  
 
     # Read data from the training HDF5 file
     with h5py.File(hdf5_file_path, 'r') as file:  
         all_keys = file.keys()  
-        data = np.array([file[key] for key in all_keys], dtype=np.float32)  
+        data = np.array([file[key] for key in all_keys],dtype=np.float32)  
         print(data.shape)  
 
     # Read data from the validation HDF5 file
@@ -43,12 +47,15 @@ def main():
         val_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
         print(val_data.shape)  
 
+    with h5py.File(hdf5_file_path_test, 'r') as file:  
+            all_keys = file.keys()  
+            test_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
+            print(test_data.shape)  
+
     # Define parameters for noise and simulation
-    noise_std = 0.3  
+  
     T = 0.006  
     n_samples = 8192
-    dt = T / n_samples
-    n_cycles = 2  
 
 
     def get_loaders(s):
@@ -61,38 +68,47 @@ def main():
         noise_transform = Noise(n_samples, T, s, interference_amps, interference_freqs)
         train_scaler = MinMaxScalerTransform()
         val_scaler = MinMaxScalerTransform()
+        test_scaler = MinMaxScalerTransform()
 
         # Fit scalers using data from the HDF5 files
         train_scaler.fit_from_hdf5(hdf5_file_path)
         val_scaler.fit_from_hdf5(hdf5_file_path_val)
+        test_scaler.fit_from_hdf5(hdf5_file_path_test)
+        
 
+        batch_size = 32  
         # Create instances of SimDataset class for training and validation datasets
         print('Creating datasets...')
         dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform)  
         val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)
+        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=noise_transform)
+        
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
-        return train_loader, val_loader
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
+        
+        return train_loader, val_loader, test_loader
 
     # Create DataLoaders
-    batch_size = 32  
 
-    # Initialize model, loss function, and optimizer
-    model = Conv1DAutoencoder().to(device)  
-    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
-
-    #criterion = nn.CrossEntropyLoss()
-    criterion = nn.BCELoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)  
 
 
     def train_model(train_loader, val_loader):
+
+        # Initialize model, loss function, and optimizer
+        model = Conv1DAutoencoder().to(device)  
+        print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+
+        #criterion = nn.CrossEntropyLoss()
+        criterion = nn.BCELoss()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
+
         # Training loop with validation
         print('Start training...')
         train_losses = []
         val_losses = []
 
-        num_epochs = 250
+        num_epochs = 25
         start = time.time()
         for epoch in range(num_epochs):  
             model.train()
@@ -138,19 +154,37 @@ def main():
         print()
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
-
+        return model
+    
+    cms = []
+    precisions = []
+    recalls = []
+    snrs = []
     noise_sigs = np.linspace(0.01, 2, 5)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
-        train_loader, val_loader = get_loaders(s)
-        train_model(train_loader, val_loader)
+        train_loader, val_loader, test_loader = get_loaders(s)
+        model = train_model(train_loader, val_loader)
+        snr = get_snr(T, s)
+        score = get_scores_aenc(model, test_loader)
+        print('snr: ', snr)
+        print('score: ', score)
+        precisions.append(score[0])
+        recalls.append(score[1])
+        cms.append(score[2])
 
-    print('Saving model parameters...')
-    model_dir = os.path.join(current_dir, 'aenc_weights')
-    os.makedirs(model_dir, exist_ok=True)  
-    state_dict_name = 'model_weights'  
-    state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
-    torch.save(model.state_dict(), state_dict_path)  
-    print('done')
+    precisions = np.array(precisions)
+    recalls = np.array(recalls)
+    cms = np.array(cms)
+
+    save_scores(snrs, precisions, recalls, cms, 'unet_scores')
+
+    # print('Saving model parameters...')
+    # model_dir = os.path.join(current_dir, 'unet_weights')
+    # os.makedirs(model_dir, exist_ok=True)  
+    # state_dict_name = 'model_weights'  
+    # state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
+    # torch.save(model.state_dict(), state_dict_path)  
+    # print('done')
 if __name__ == '__main__':
     main()

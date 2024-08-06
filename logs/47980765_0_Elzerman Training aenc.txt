@@ -1,0 +1,39 @@
+GPU available:  True
+GPU available:  True
+cuda
+(100, 8192)
+(100, 8192)
+(100, 8192)
+noise sigs:  [0.01   0.5075 1.005  1.5025 2.    ]
+Noise Sigma:  0.01
+Creating datasets...
+20086
+Start training...
+Epoch [1/25], Train Loss: 0.7148, Validation Loss: 0.7107
+Epoch [2/25], Train Loss: 0.7068, Validation Loss: 0.7040
+Epoch [3/25], Train Loss: 0.7017, Validation Loss: 0.6993
+Epoch [4/25], Train Loss: 0.6973, Validation Loss: 0.6961
+Epoch [5/25], Train Loss: 0.6947, Validation Loss: 0.6933
+Epoch [6/25], Train Loss: 0.6927, Validation Loss: 0.6913
+Epoch [7/25], Train Loss: 0.6913, Validation Loss: 0.6901
+Epoch [8/25], Train Loss: 0.6907, Validation Loss: 0.6896
+Epoch [9/25], Train Loss: 0.6913, Validation Loss: 0.6895
+Epoch [10/25], Train Loss: 0.6912, Validation Loss: 0.6895
+Epoch [11/25], Train Loss: 0.6911, Validation Loss: 0.6895
+Epoch [12/25], Train Loss: 0.6911, Validation Loss: 0.6895
+Epoch [13/25], Train Loss: 0.6910, Validation Loss: 0.6895
+Epoch [14/25], Train Loss: 0.6910, Validation Loss: 0.6896
+Epoch [15/25], Train Loss: 0.6909, Validation Loss: 0.6896
+Epoch [16/25], Train Loss: 0.6909, Validation Loss: 0.6897
+Epoch [17/25], Train Loss: 0.6909, Validation Loss: 0.6897
+Epoch [18/25], Train Loss: 0.6909, Validation Loss: 0.6898
+Epoch [19/25], Train Loss: 0.6909, Validation Loss: 0.6898
+Epoch [20/25], Train Loss: 0.6908, Validation Loss: 0.6901
+Epoch [21/25], Train Loss: 0.6912, Validation Loss: 0.6905
+Epoch [22/25], Train Loss: 0.6913, Validation Loss: 0.6907
+Epoch [23/25], Train Loss: 0.6913, Validation Loss: 0.6905
+Epoch [24/25], Train Loss: 0.6912, Validation Loss: 0.6901
+Epoch [25/25], Train Loss: 0.6910, Validation Loss: 0.6899
+
+Finished Training in 9.9
+
