@@ -102,6 +102,7 @@ def plot(test_loader):
         
         x = x.cpu()
         y = y.cpu()
+        decoded_test_data=decoded_test_data.cpu()
 
     # Plot the results
     print('Plotting the results...')
@@ -214,7 +215,7 @@ precisions = []
 recalls = []
 snrs = []
 interference_freqs = [50, 200, 600, 1000]  
-noise_sigs = np.linspace(0.01, 0.5, 1)
+noise_sigs = np.linspace(0.01, 2, 15)
 for s in noise_sigs: 
     print(s)
     loader = get_loaders(s)

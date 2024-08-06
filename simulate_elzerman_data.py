@@ -347,7 +347,7 @@ def main():
     
     lambda_in = 3500.0
     lambda_out = 2400.0
-    s=0.3
+    s=1
     noise_std = s  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
     print(f'Simulation time per trace: {T}s\n\n')
@@ -371,7 +371,7 @@ def main():
     bx.hist(trace, bins=150)
     plt.show(block=True) 
 
-
+#%%
     def save_dummy_traces(file_name, n): 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         trace_dir = os.path.join(current_dir, 'traces')
@@ -399,6 +399,7 @@ def main():
     def save_elzerman_traces(file_name, n):
          current_dir = os.path.dirname(os.path.abspath(__file__))
          trace_dir = os.path.join(current_dir, 'traces')
+         os.makedirs(trace_dir, exist_ok=True)  
          hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
 
          with h5py.File(hdf5_file_path, 'w') as file:
@@ -451,9 +452,9 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_elzerman_traces('sim_elzerman_traces_train', 100)
-    save_elzerman_traces('sim_elzerman_traces_val', 100)
-    save_elzerman_traces('sim_elzerman_traces_test', 100)
+    save_elzerman_traces('sim_elzerman_traces_train1', 10000)
+    save_elzerman_traces('sim_elzerman_traces_val1', 100)
+    save_elzerman_traces('sim_elzerman_traces_test1', 10000)
     
 
 if __name__ == '__main__':

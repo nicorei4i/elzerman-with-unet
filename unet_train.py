@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
 import time
+
 def main():
     # Check if GPU is available
     print('GPU available: ', torch.cuda.is_available())
@@ -136,7 +137,7 @@ def main():
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
 
-    noise_sigs = np.linspace(0.01, 0.5, 1)
+    noise_sigs = np.linspace(0.01, 2, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader = get_loaders(s)

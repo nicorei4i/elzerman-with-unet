@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.sgd
-from unet_model import UNet
 from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
@@ -140,7 +139,7 @@ def main():
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
 
-    noise_sigs = np.linspace(0.01, 0.5, 1)
+    noise_sigs = np.linspace(0.01, 2, 5)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader = get_loaders(s)
