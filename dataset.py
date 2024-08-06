@@ -25,7 +25,7 @@ class SimDataset(Dataset):
         file = h5py.File(file_path, 'r')  # Open the HDF5 file in read mode
         self.keys = list(file.keys())  # Get the list of keys (datasets) in the file
         random.shuffle(self.keys)  # Shuffle the keys to randomize the order of access
-        self.traces = {key: np.array(file[key]) for key in self.keys}
+        self.traces = {key: np.array(file[key], dtype=np.float32) for key in self.keys}
 
         file.close()  # Close the HDF5 file
 
@@ -194,7 +194,7 @@ class MinMaxScalerTransform:
         """
         with h5py.File(file_path, 'r') as file:
             all_keys = file.keys()
-            data = np.array([file[key] for key in all_keys])
+            data = np.array([file[key] for key in all_keys],dtype=np.float32)
         self.scaler.fit(data)
         return self
 

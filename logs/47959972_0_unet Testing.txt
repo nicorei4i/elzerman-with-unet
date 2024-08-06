@@ -1,0 +1,7 @@
+GPU available:  True
+(10000, 8192)
+0.01
+Noise Amp:  0.01
+Creating datasets...
+Plotting the results...
+x:  <class 'numpy.ndarray'> 

@@ -20,12 +20,12 @@ from pathlib import Path
 print('GPU available: ', torch.cuda.is_available())
 
 # Set device to GPU if available, otherwise use CPU
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device='cpu'
 # Directory setup
 current_dir = os.path.dirname(os.path.abspath(__file__))
 trace_dir = os.path.join(current_dir, 'traces')
-file_name = 'sim_elzerman_traces_train_1k'  # Name for the test HDF5 file
+file_name = 'sim_elzerman_traces_test'  # Name for the test HDF5 file
 #mask_name = 'sim_elzerman_test_masks'  # Name for the mask HDF5 file
 
 # Construct full paths for the HDF5 files
@@ -35,7 +35,7 @@ hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  # Test fi
 # Read data from the test HDF5 file
 with h5py.File(hdf5_file_path, 'r') as file:
     all_keys = file.keys()  # Get all keys (datasets) in the HDF5 file
-    test_data = np.array([file[key] for key in all_keys])  # Read data and store in a numpy array
+    test_data = np.array([file[key] for key in all_keys], dtype=np.float32)  # Read data and store in a numpy array
     print(test_data.shape)  # Print the data shape for verification
 
 # Define time indices
@@ -49,7 +49,7 @@ times_indices = times_indices.astype(np.int64)
 start_read, end_read = times_indices[1], times_indices[2]
 
 # Define parameters for noise and simulation
-noise_std = 0.3  
+
 T = 0.006  
 N = 2
 n_samples = 8192
@@ -64,7 +64,7 @@ def get_loaders(s):
     interference_freqs = [50, 200, 600, 1000]  
 
     # Create instances of Noise and MinMaxScalerTransform classes
-    noise_transform = Noise(n_samples, T, noise_std, interference_amps, interference_freqs)
+    noise_transform = Noise(n_samples, T, s, interference_amps, interference_freqs)
     scaler = MinMaxScalerTransform()
     
     # Fit scalers using data from the HDF5 files
@@ -78,7 +78,7 @@ def get_loaders(s):
 
 # Model setup
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-model_dir = os.path.join(current_dir, 'batchsnr10k')  # Directory for model weights
+model_dir = os.path.join(current_dir, 'unet_weights')  # Directory for model weights
 state_dict_name = 'model_weights'  # Name for the model state dictionary
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
 
@@ -100,17 +100,23 @@ def plot(test_loader):
         decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
         prediction_class = decoded_test_data.argmax(axis=1)
         
-        x = x.cpu()
-        y = y.cpu()
+        x = x.cpu().numpy()
+        y = y.cpu().numpy()
 
     # Plot the results
     print('Plotting the results...')
+    print('x: ', type(x))
+    print('y: ', type(y))
+    print('prediction class: ', type(prediction_class))
+    print('decoded test data: ', type(decoded_test_data))
+    
+    
     for i in range(2):
         fig, axs = plt.subplots(4, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
 
         fig.suptitle('Validation Traces')
 
-        axs[0].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+        axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
         axs[0].tick_params(labelbottom=False)
         axs[0].legend()
 
@@ -119,15 +125,13 @@ def plot(test_loader):
         axs[1].legend()
 
         axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
-        axs[2].plot(decoded_test_data[i, 0, :], label='denoised', color='mediumblue', linewidth=0.9)
-        
         axs[2].tick_params(labelbottom=False)
         axs[2].legend()
 
-        axs[3].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[3].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
         axs[3].legend()
-        plt.show(block=False)
-        #plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
+        #plt.show(block=False)
+        plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
 
 
 def get_snr(sim_t, sigma, amps, freqs):
@@ -214,7 +218,7 @@ precisions = []
 recalls = []
 snrs = []
 interference_freqs = [50, 200, 600, 1000]  
-noise_sigs = np.linspace(0.01, 0.5, 1)
+noise_sigs = np.linspace(0.01, 2, 20)
 for s in noise_sigs: 
     print(s)
     loader = get_loaders(s)

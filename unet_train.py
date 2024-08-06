@@ -26,8 +26,8 @@ def main():
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_elzerman_traces_train'  
-    val_name = 'sim_elzerman_traces_val'  
+    file_name = 'sim_elzerman_traces_train100'  
+    val_name = 'sim_elzerman_traces_val100'  
 
     # Construct full paths for the HDF5 files
     hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
@@ -36,21 +36,19 @@ def main():
     # Read data from the training HDF5 file
     with h5py.File(hdf5_file_path, 'r') as file:  
         all_keys = file.keys()  
-        data = np.array([file[key] for key in all_keys])  
+        data = np.array([file[key] for key in all_keys],dtype=np.float32)  
         print(data.shape)  
 
     # Read data from the validation HDF5 file
     with h5py.File(hdf5_file_path_val, 'r') as file:  
         all_keys = file.keys()  
-        val_data = np.array([file[key] for key in all_keys])  
+        val_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
         print(val_data.shape)  
 
     # Define parameters for noise and simulation
-    noise_std = 0.3  
+  
     T = 0.006  
     n_samples = 8192
-    dt = T / n_samples
-    n_cycles = 2  
 
 
     def get_loaders(s):
@@ -60,7 +58,7 @@ def main():
         interference_freqs = [50, 200, 600, 1000]  
 
         # Create instances of Noise and MinMaxScalerTransform classes
-        noise_transform = Noise(n_samples, T, noise_std, interference_amps, interference_freqs)
+        noise_transform = Noise(n_samples, T, s, interference_amps, interference_freqs)
         train_scaler = MinMaxScalerTransform()
         val_scaler = MinMaxScalerTransform()
 
@@ -92,7 +90,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 25
+        num_epochs = 250
         start = time.time()
         for epoch in range(num_epochs):  
             model.train()
@@ -137,7 +135,7 @@ def main():
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
 
-    noise_sigs = np.linspace(0.01, 2, 10)
+    noise_sigs = np.linspace(0.01, 2, 5)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader = get_loaders(s)

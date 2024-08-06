@@ -3,7 +3,9 @@ import torch.nn as nn
 from torchvision import models
 from torch.nn.functional import relu
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
+#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
+device='cpu'
+
 pool_size = 8
 
 class encoder_block(torch.nn.Module):

@@ -34,13 +34,13 @@ def main():
     # Read data from the training HDF5 file
     with h5py.File(hdf5_file_path, 'r') as file:  
         all_keys = file.keys()  
-        data = np.array([file[key] for key in all_keys])  
+        data = np.array([file[key] for key in all_keys], dtype=np.float32)  
         print(data.shape)  
 
     # Read data from the validation HDF5 file
     with h5py.File(hdf5_file_path_val, 'r') as file:  
         all_keys = file.keys()  
-        val_data = np.array([file[key] for key in all_keys])  
+        val_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
         print(val_data.shape)  
 
     # Define parameters for noise and simulation
@@ -58,7 +58,7 @@ def main():
         interference_freqs = [50, 200, 600, 1000]  
 
         # Create instances of Noise and MinMaxScalerTransform classes
-        noise_transform = Noise(n_samples, T, noise_std, interference_amps, interference_freqs)
+        noise_transform = Noise(n_samples, T, s, interference_amps, interference_freqs)
         train_scaler = MinMaxScalerTransform()
         val_scaler = MinMaxScalerTransform()
 
@@ -92,7 +92,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 25
+        num_epochs = 250
         start = time.time()
         for epoch in range(num_epochs):  
             model.train()
