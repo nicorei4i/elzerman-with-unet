@@ -310,7 +310,13 @@ def noise(trace, sim_t, sigma, amps, freqs):
         interference_noise += (amp * np.sin(2 * np.pi * freqs[i] * t + phi_0) + white_noise + pink_sigma * pink_noise)
       
     total_noise = white_noise + pink_noise + interference_noise
-    snr = (np.max(trace)-np.min(trace))/np.std(total_noise)
+    signal_power = np.mean(trace**2)
+    noise_power = np.mean(total_noise**2)
+    snr = signal_power/noise_power
+    print(signal_power)
+    print(noise_power)
+    snr = 10*np.log10(snr)
+
     noisy_trace = trace + total_noise
     return noisy_trace, snr
 
@@ -347,7 +353,7 @@ def main():
     
     lambda_in = 3500.0
     lambda_out = 2400.0
-    s=1
+    s=0.01
     noise_std = s  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
     print(f'Simulation time per trace: {T}s\n\n')
@@ -360,8 +366,8 @@ def main():
 
 
     _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
-    trace, snr = noise(trace, T, noise_std, interference_amps, interference_freqs)
-    print('Signal to noise: ', snr)
+    trace, snr = noise(trace, T, s, interference_amps, interference_freqs)
+    print(f'Signal to noise: {snr} dB')
     times = np.arange(0, 8192, 1)
     fig, (ax, bx) = plt.subplots(2, 1)
     ax.plot(trace, label='Simulated test data')
@@ -371,7 +377,7 @@ def main():
     bx.hist(trace, bins=150)
     plt.show(block=True) 
 
-#%%
+
     def save_dummy_traces(file_name, n): 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         trace_dir = os.path.join(current_dir, 'traces')
@@ -452,9 +458,9 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_elzerman_traces('sim_elzerman_traces_train100', 100)
-    save_elzerman_traces('sim_elzerman_traces_val100', 100)
-    save_elzerman_traces('sim_elzerman_traces_test100', 100)
+    #save_elzerman_traces('sim_elzerman_traces_train100', 100)
+    #save_elzerman_traces('sim_elzerman_traces_val100', 100)
+    #save_elzerman_traces('sim_elzerman_traces_test100', 100)
     
 
 if __name__ == '__main__':

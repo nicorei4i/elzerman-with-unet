@@ -1,0 +1,41 @@
+GPU available:  True
+GPU available:  True
+cuda
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+20769
+noise sigs:  [0.01       0.23111111 0.45222222 0.67333333 0.89444444 1.11555556
+ 1.33666667 1.55777778 1.77888889 2.        ]
+Noise Sigma:  0.01
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.0129, Validation Loss: 0.0006
+Epoch [2/25], Train Loss: 0.0002, Validation Loss: 0.0005
+Epoch [3/25], Train Loss: 0.0001, Validation Loss: 0.0005
+Epoch [4/25], Train Loss: 0.0001, Validation Loss: 0.0005
+Epoch [5/25], Train Loss: 0.0001, Validation Loss: 0.0003
+Epoch [6/25], Train Loss: 0.0001, Validation Loss: 0.0001
+Epoch [7/25], Train Loss: 0.0001, Validation Loss: 0.0000
+Epoch [8/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [9/25], Train Loss: 0.0001, Validation Loss: 0.0001
+Epoch [10/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [11/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [12/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [13/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [14/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [15/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [16/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [17/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [18/25], Train Loss: 0.0007, Validation Loss: 0.0000
+Epoch [19/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [20/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [21/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [22/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [23/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [24/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [25/25], Train Loss: 0.0000, Validation Loss: 0.0000
+
+Finished Training in 299.4
+
+Plotting the results...

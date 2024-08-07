@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
 import time
-from test_lib import get_snr, get_scores_unet, save_scores
+from test_lib import get_snr, get_scores_unet, save_scores, plot_unet
 
 def main():
     # Check if GPU is available
@@ -21,15 +21,16 @@ def main():
 
     # Set device to GPU if available, else CPU
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    #device='cpu'
     print(device)
 
     # Set up directory paths
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_elzerman_traces_train100'  
-    val_name = 'sim_elzerman_traces_val100'  
-    test_name = 'sim_elzerman_traces_test100'  
+    file_name = 'sim_elzerman_traces_train'  
+    val_name = 'sim_elzerman_traces_val'  
+    test_name = 'sim_elzerman_traces_test'  
 
     # Construct full paths for the HDF5 files
     hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
@@ -95,14 +96,13 @@ def main():
 
     # Initialize model, loss function, and optimizer
     
+    model = UNet().to(device)  
+    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
 
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
+    # Training loop with validation
     def train_model(train_loader, val_loader):
-        model = UNet().to(device)  
-        print(sum(p.numel() for p in model.parameters() if p.requires_grad))
-
-        criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
-        # Training loop with validation
         print('Start training...')
         train_losses = []
         val_losses = []
@@ -151,24 +151,28 @@ def main():
         print()
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
-        return model
     
     cms = []
     precisions = []
     recalls = []
     snrs = []
-    noise_sigs = np.linspace(0.01, 2, 5)
+    noise_sigs = np.linspace(0.01, 0.7, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader, test_loader = get_loaders(s)
-        model = train_model(train_loader, val_loader)
-        snr = get_snr(T, s)
-        score = get_scores_unet(model, test_loader)
-        print('snr: ', snr)
-        print('score: ', score)
-        precisions.append(score[0])
-        recalls.append(score[1])
-        cms.append(score[2])
+        train_model(train_loader, val_loader)
+        model.eval()
+        with torch.no_grad():
+            snr = get_snr(test_loader)
+            model_dir = os.path.join(current_dir, 'unet_weights')
+            plot_unet(model, test_loader, model_dir, snr)
+            score = get_scores_unet(model, test_loader)
+            print('snr: ', snr)
+            print('score: ', score)
+            snrs.append(snr)
+            precisions.append(score[0])
+            recalls.append(score[1])
+            cms.append(score[2])
 
     precisions = np.array(precisions)
     recalls = np.array(recalls)
@@ -176,12 +180,11 @@ def main():
 
     save_scores(snrs, precisions, recalls, cms, 'unet_scores')
 
-    # print('Saving model parameters...')
-    # model_dir = os.path.join(current_dir, 'unet_weights')
-    # os.makedirs(model_dir, exist_ok=True)  
-    # state_dict_name = 'model_weights'  
-    # state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
-    # torch.save(model.state_dict(), state_dict_path)  
-    # print('done')
+    print('Saving model parameters...')
+    os.makedirs(model_dir, exist_ok=True)  
+    state_dict_name = 'model_weights'  
+    state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
+    torch.save(model.state_dict(), state_dict_path)  
+    print('done')
 if __name__ == '__main__':
     main()

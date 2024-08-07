@@ -1,0 +1,185 @@
+GPU available:  True
+GPU available:  True
+cuda
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+20769
+noise sigs:  [0.01   0.1825 0.355  0.5275 0.7   ]
+Noise Sigma:  0.01
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.0287, Validation Loss: 0.0003
+Epoch [2/25], Train Loss: 0.0001, Validation Loss: 0.0002
+Epoch [3/25], Train Loss: 0.0001, Validation Loss: 0.0002
+Epoch [4/25], Train Loss: 0.0001, Validation Loss: 0.0000
+Epoch [5/25], Train Loss: 0.0001, Validation Loss: 0.0000
+Epoch [6/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [7/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [8/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [9/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [10/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [11/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [12/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [13/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [14/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [15/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [16/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [17/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [18/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [19/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [20/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [21/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [22/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [23/25], Train Loss: 0.0000, Validation Loss: 0.0000
+Epoch [24/25], Train Loss: 0.0000, Validation Loss: 0.0001
+Epoch [25/25], Train Loss: 0.0000, Validation Loss: 0.0000
+
+Finished Training in 284.3
+
+Plotting the results...
+snr:  30.8331036567688
+score:  (1.0, 0.9992941176470588, array([[4247,    0],
+       [   3, 5750]]))
+Noise Sigma:  0.1825
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 54.1108, Validation Loss: 52.9218
+Epoch [2/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [3/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [4/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [5/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [6/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [7/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [8/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [9/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [10/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [11/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [12/25], Train Loss: 54.3613, Validation Loss: 52.9218
+Epoch [13/25], Train Loss: 54.3613, Validation Loss: 52.9217
+Epoch [14/25], Train Loss: 54.3613, Validation Loss: 52.9217
+Epoch [15/25], Train Loss: 54.3612, Validation Loss: 52.9217
+Epoch [16/25], Train Loss: 54.3612, Validation Loss: 52.9217
+Epoch [17/25], Train Loss: 54.3611, Validation Loss: 52.9217
+Epoch [18/25], Train Loss: 50.4877, Validation Loss: 0.6969
+Epoch [19/25], Train Loss: 0.0261, Validation Loss: 0.0005
+Epoch [20/25], Train Loss: 0.0004, Validation Loss: 0.0004
+Epoch [21/25], Train Loss: 0.0004, Validation Loss: 0.0005
+Epoch [22/25], Train Loss: 0.0003, Validation Loss: 0.0004
+Epoch [23/25], Train Loss: 0.0003, Validation Loss: 0.0004
+Epoch [24/25], Train Loss: 0.0003, Validation Loss: 0.0004
+Epoch [25/25], Train Loss: 0.0003, Validation Loss: 0.0003
+
+Finished Training in 291.6
+
+Plotting the results...
+snr:  10.19202470779419
+score:  (1.0, 0.9941176470588236, array([[4225,    0],
+       [  25, 5750]]))
+Noise Sigma:  0.355
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.0986, Validation Loss: 0.0782
+Epoch [2/25], Train Loss: 0.0741, Validation Loss: 0.0731
+Epoch [3/25], Train Loss: 0.0721, Validation Loss: 0.0702
+Epoch [4/25], Train Loss: 0.0716, Validation Loss: 0.0704
+Epoch [5/25], Train Loss: 0.0719, Validation Loss: 0.0842
+Epoch [6/25], Train Loss: 0.0721, Validation Loss: 0.0702
+Epoch [7/25], Train Loss: 0.0710, Validation Loss: 0.0695
+Epoch [8/25], Train Loss: 0.0708, Validation Loss: 0.0681
+Epoch [9/25], Train Loss: 0.0703, Validation Loss: 0.0664
+Epoch [10/25], Train Loss: 0.0705, Validation Loss: 0.0697
+Epoch [11/25], Train Loss: 0.0701, Validation Loss: 0.0659
+Epoch [12/25], Train Loss: 0.0701, Validation Loss: 0.0688
+Epoch [13/25], Train Loss: 0.0694, Validation Loss: 0.0685
+Epoch [14/25], Train Loss: 0.0699, Validation Loss: 0.0745
+Epoch [15/25], Train Loss: 0.0707, Validation Loss: 0.0708
+Epoch [16/25], Train Loss: 0.0699, Validation Loss: 0.0753
+Epoch [17/25], Train Loss: 0.0701, Validation Loss: 0.0645
+Epoch [18/25], Train Loss: 0.0692, Validation Loss: 0.0726
+Epoch [19/25], Train Loss: 0.0708, Validation Loss: 0.0668
+Epoch [20/25], Train Loss: 0.0686, Validation Loss: 0.0590
+Epoch [21/25], Train Loss: 0.0692, Validation Loss: 0.0620
+Epoch [22/25], Train Loss: 0.0696, Validation Loss: 0.0717
+Epoch [23/25], Train Loss: 0.0688, Validation Loss: 0.0601
+Epoch [24/25], Train Loss: 0.0695, Validation Loss: 0.0682
+Epoch [25/25], Train Loss: 0.0691, Validation Loss: 0.0715
+
+Finished Training in 290.2
+
+Plotting the results...
+snr:  3.8549646735191345
+score:  (1.0, 0.9595294117647059, array([[4078,    0],
+       [ 172, 5750]]))
+Noise Sigma:  0.5275
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.2352, Validation Loss: 0.2309
+Epoch [2/25], Train Loss: 0.2317, Validation Loss: 0.2186
+Epoch [3/25], Train Loss: 0.2317, Validation Loss: 0.2180
+Epoch [4/25], Train Loss: 0.2300, Validation Loss: 0.2289
+Epoch [5/25], Train Loss: 0.2292, Validation Loss: 0.2169
+Epoch [6/25], Train Loss: 0.2299, Validation Loss: 0.2364
+Epoch [7/25], Train Loss: 0.2307, Validation Loss: 0.2310
+Epoch [8/25], Train Loss: 0.2306, Validation Loss: 0.2416
+Epoch [9/25], Train Loss: 0.2299, Validation Loss: 0.2276
+Epoch [10/25], Train Loss: 0.2291, Validation Loss: 0.2202
+Epoch [11/25], Train Loss: 0.2303, Validation Loss: 0.2271
+Epoch [12/25], Train Loss: 0.2293, Validation Loss: 0.2331
+Epoch [13/25], Train Loss: 0.2322, Validation Loss: 0.2281
+Epoch [14/25], Train Loss: 0.2308, Validation Loss: 0.2311
+Epoch [15/25], Train Loss: 0.2310, Validation Loss: 0.2268
+Epoch [16/25], Train Loss: 0.2287, Validation Loss: 0.2294
+Epoch [17/25], Train Loss: 0.2286, Validation Loss: 0.2297
+Epoch [18/25], Train Loss: 0.2300, Validation Loss: 0.2359
+Epoch [19/25], Train Loss: 0.2309, Validation Loss: 0.2164
+Epoch [20/25], Train Loss: 0.2306, Validation Loss: 0.2206
+Epoch [21/25], Train Loss: 0.2291, Validation Loss: 0.2225
+Epoch [22/25], Train Loss: 0.2295, Validation Loss: 0.2377
+Epoch [23/25], Train Loss: 0.2262, Validation Loss: 0.2358
+Epoch [24/25], Train Loss: 0.2284, Validation Loss: 0.2321
+Epoch [25/25], Train Loss: 0.2290, Validation Loss: 0.2347
+
+Finished Training in 285.0
+
+Plotting the results...
+snr:  0.8409132808446884
+score:  (1.0, 0.6550588235294118, array([[2784,    0],
+       [1466, 5750]]))
+Noise Sigma:  0.7
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.3596, Validation Loss: 0.3568
+Epoch [2/25], Train Loss: 0.3563, Validation Loss: 0.3523
+Epoch [3/25], Train Loss: 0.3583, Validation Loss: 0.3363
+Epoch [4/25], Train Loss: 0.3564, Validation Loss: 0.3608
+Epoch [5/25], Train Loss: 0.3587, Validation Loss: 0.3638
+Epoch [6/25], Train Loss: 0.3586, Validation Loss: 0.3526
+Epoch [7/25], Train Loss: 0.3569, Validation Loss: 0.3464
+Epoch [8/25], Train Loss: 0.3567, Validation Loss: 0.3441
+Epoch [9/25], Train Loss: 0.3582, Validation Loss: 0.3713
+Epoch [10/25], Train Loss: 0.3566, Validation Loss: 0.3622
+Epoch [11/25], Train Loss: 0.3570, Validation Loss: 0.3407
+Epoch [12/25], Train Loss: 0.3598, Validation Loss: 0.3508
+Epoch [13/25], Train Loss: 0.3568, Validation Loss: 0.3609
+Epoch [14/25], Train Loss: 0.3573, Validation Loss: 0.3699
+Epoch [15/25], Train Loss: 0.3594, Validation Loss: 0.3519
+Epoch [16/25], Train Loss: 0.3573, Validation Loss: 0.3462
+Epoch [17/25], Train Loss: 0.3576, Validation Loss: 0.3707
+Epoch [18/25], Train Loss: 0.3577, Validation Loss: 0.3743
+Epoch [19/25], Train Loss: 0.3576, Validation Loss: 0.3551
+Epoch [20/25], Train Loss: 0.3579, Validation Loss: 0.3440
+Epoch [21/25], Train Loss: 0.3598, Validation Loss: 0.3648
+Epoch [22/25], Train Loss: 0.3564, Validation Loss: 0.3445
+Epoch [23/25], Train Loss: 0.3552, Validation Loss: 0.3650
+Epoch [24/25], Train Loss: 0.3588, Validation Loss: 0.3511
+Epoch [25/25], Train Loss: 0.3547, Validation Loss: 0.3735
+
+Finished Training in 290.2
+
+Plotting the results...
+snr:  -2.3467254638671875
+score:  (1.0, 0.34941176470588237, array([[1485,    0],
+       [2765, 5750]]))
+Saving model parameters...
+done

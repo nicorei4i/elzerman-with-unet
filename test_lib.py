@@ -2,6 +2,8 @@
 import numpy as np
 import os
 import h5py
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
@@ -21,7 +23,8 @@ print('GPU available: ', torch.cuda.is_available())
 
 # Set device to GPU if available, otherwise use CPU
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# #device='cpu'
+
+
 # # Directory setup
 # current_dir = os.path.dirname(os.path.abspath(__file__))
 # trace_dir = os.path.join(current_dir, 'traces')
@@ -86,8 +89,22 @@ batch_size = 32
 # model = UNet().to(device)
 # model.load_state_dict(torch.load(state_dict_path, map_location=device, weights_only=True))
 # model.eval()
+def format_number(num):
+    try:
+        # Attempt to convert num to a float
+        num = float(num)
+    except ValueError:
+        raise TypeError("The input must be a number or a string representing a number.")
+    
+    # Round the number to 2 decimal places
+    rounded_num = round(num, 2)
+    
+    # Convert the number to a string and replace the decimal dot with an underscore
+    formatted_str = str(rounded_num).replace('.', '_')
+    
+    return formatted_str
 
-def plot(model, test_loader):
+def plot_unet(model, test_loader, model_dir, snr):
     # Visualize validation dataset predictions
     x, y = next(iter(test_loader))  # Get a batch of validation data
     x = x.to(device)
@@ -106,7 +123,7 @@ def plot(model, test_loader):
     # Plot the results
     print('Plotting the results...')
     
-    
+    snr = format_number(snr)
     for i in range(2):
         fig, axs = plt.subplots(4, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
 
@@ -127,41 +144,70 @@ def plot(model, test_loader):
         axs[3].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
         axs[3].legend()
         #plt.show(block=False)
-        #plt.savefig(os.path.join(model_dir, f'validation_trace_{i}.png'))  # Save each figure
-
-
-def get_snr(sim_t, sigma):
-
-    shape = 8192
-    T = sim_t
-    
-    amps = np.ones(4) * sigma  
-    freqs = [50, 200, 600, 1000]  
-
-    white_sigma = sigma
-    pink_sigma = 0.1 * sigma
-
-
-    white_noise = np.random.normal(0.0, white_sigma, shape)
-
-    exponents = np.fft.fftfreq(shape)
-    exponents[0] = 1  # Avoid division by zero
-    amplitudes = 1 / np.sqrt(np.abs(exponents))
-    amplitudes[0] = 0  # Set the DC component to 0
-    random_phases = np.exp(2j * np.pi * np.random.random(shape))
-    pink_noise_spectrum = amplitudes * random_phases
-    pink_noise = np.fft.ifft(pink_noise_spectrum).real
-
-    interference_noise = 0
-    t = np.linspace(0, T, shape)
-    phi_0 = np.random.uniform(0, 2 * np.pi, 1)  # Random initial phase
-
-    for i, amp in enumerate(amps):
-        interference_noise += (amp * np.sin(2 * np.pi * freqs[i] * t + phi_0) + white_noise + pink_sigma * pink_noise)
         
+        plt.savefig(os.path.join(model_dir, f'unet_{snr}_{i}.pdf'))  # Save each figure
+
+
+def plot_aenc(model, test_loader, model_dir, snr):
+    # Visualize validation dataset predictions
+    x, y = next(iter(test_loader))  # Get a batch of validation data
+    x = x.to(device)
+    y = y.to(device)
+    model.eval()
+    with torch.no_grad():  # Disable gradient calculation for visualization
+        decoded_test_data = model(x)
+        # m = torch.nn.Softmax(dim=1)
+        # decoded_test_data = m(decoded_test_data)
+        # decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
+        # prediction_class = decoded_test_data.argmax(axis=1)
         
-    noise = white_noise + pink_noise + interference_noise
-    snr = 2/np.std(noise)
+        x = x.cpu()
+        y = y.cpu()
+        decoded_test_data=decoded_test_data.cpu().numpy()
+
+    # Plot the results
+    print('Plotting the results...')
+    snr = format_number(snr)
+    for i in range(2):
+        fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
+
+        fig.suptitle('Validation Traces')
+
+        axs[0].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+        axs[0].tick_params(labelbottom=False)
+        axs[0].legend()
+
+        #axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[1].plot(decoded_test_data[i, 0, :], label='denoised', color='mediumblue', linewidth=0.9)
+        axs[1].tick_params(labelbottom=False)
+        axs[1].legend()
+
+        axs[2].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[2].legend()
+        #plt.show(block=False)
+       
+        plt.savefig(os.path.join(model_dir, f'aenc_{snr}_{i}.pdf'))  # Save each figure
+
+
+def get_snr(loader):
+    x, y = next(iter(loader))  # Get a batch of validation data
+    x = x.cpu().numpy()
+    y = y.cpu().numpy()
+    x = np.array(x, dtype=np.float32)
+    y = np.array(y, dtype=np.float32)
+    x = x.squeeze(1)
+    y = y.squeeze(1)
+
+    signals = y
+    noise = x-y
+
+    signal_powers = np.mean(signals**2, axis=1)
+    noise_powers = np.mean(noise**2, axis=1)
+
+
+    snr = np.mean(signal_powers/noise_powers)
+
+    snr = 10* np.log10(snr)
 
     return snr
 

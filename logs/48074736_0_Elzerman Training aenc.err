@@ -1,0 +1,37 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+Traceback (most recent call last):
+  File "/home/md334167/elzerman-with-unet/aenc_train.py", line 190, in <module>
+    main()
+  File "/home/md334167/elzerman-with-unet/aenc_train.py", line 168, in main
+    plot_aenc(model, test_loader, model_dir, snr)
+  File "/rwthfs/rz/cluster/home/md334167/elzerman-with-unet/test_lib.py", line 172, in plot_aenc
+    axs[2].plot(decoded_test_data[i, 0, :], label='denoised', color='mediumblue', linewidth=0.9)
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/axes/_axes.py", line 1781, in plot
+    self.add_line(line)
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 2339, in add_line
+    self._update_line_limits(line)
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 2362, in _update_line_limits
+    path = line.get_path()
+           ^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/lines.py", line 1037, in get_path
+    self.recache()
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/lines.py", line 679, in recache
+    y = _to_unmasked_float_array(yconv).ravel()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/cbook.py", line 1398, in _to_unmasked_float_array
+    return np.asarray(x, float)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/torch/_tensor.py", line 1085, in __array__
+    return self.numpy().astype(dtype, copy=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Cannot interpret 'dtype('float64')' as a data type

@@ -1,0 +1,15 @@
+GPU available:  True
+GPU available:  True
+cuda
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+20086
+noise sigs:  [0.1  0.45 0.8  1.15 1.5 ]
+Noise Sigma:  0.1
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.6931, Validation Loss: 0.6931
+Epoch [2/25], Train Loss: 0.6931, Validation Loss: 0.6931
+Epoch [3/25], Train Loss: 0.6931, Validation Loss: 0.6931
+Epoch [4/25], Train Loss: 0.6931, Validation Loss: 0.6931
