@@ -1,0 +1,23 @@
+GPU available:  False
+GPU available:  False
+cpu
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+20086
+noise sigs:  [0.01       0.08666667 0.16333333 0.24       0.31666667 0.39333333
+ 0.47       0.54666667 0.62333333 0.7       ]
+Noise Sigma:  0.01
+Creating datasets...
+Start training...
+Epoch [1/25], Train Loss: 0.1041, Validation Loss: 0.0000, lr = 0.01
+Epoch [2/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0097
+Epoch [3/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0094
+Epoch [4/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0091
+Epoch [5/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0088
+Epoch [6/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0085
+Epoch [7/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0082
+Epoch [8/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.0079
+Epoch [9/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.007600000000000001
+Epoch [10/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.007300000000000001
+Epoch [11/25], Train Loss: 0.0000, Validation Loss: 0.0000, lr = 0.007

@@ -1,0 +1,12 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+slurmstepd: error: *** JOB 48088438 ON n23g0016 CANCELLED AT 2024-08-08T11:32:16 ***

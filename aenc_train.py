@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.sgd
+import torch.optim.lr_scheduler as lr_scheduler
 from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
@@ -91,23 +92,28 @@ def main():
     # Create DataLoaders
 
     # Initialize model, loss function, and optimizer
-    model = Conv1DAutoencoder().to(device)  
-    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
-
-    #criterion = nn.CrossEntropyLoss()
-    criterion = nn.BCELoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
+   
 
     def train_model(train_loader, val_loader):
 
         # Training loop with validation
         print('Start training...')
+
+        model = Conv1DAutoencoder().to(device)  
+        print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+
+        #criterion = nn.CrossEntropyLoss()
+        criterion = nn.BCELoss()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
+        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1, end_factor=0.1, total_iters=25)
+
         train_losses = []
         val_losses = []
 
         num_epochs = 25
         start = time.time()
-        for epoch in range(num_epochs):  
+        for epoch in range(num_epochs): 
+            start_train = time.time() 
             model.train()
             train_loss = 0.0
             for batch_x, batch_y in train_loader:  
@@ -124,6 +130,8 @@ def main():
                 train_loss += loss.item() * batch_x.size(0)
             train_loss /= len(train_loader.dataset)
             train_losses.append(train_loss)
+            lr = optimizer.param_groups[0]["lr"]
+            scheduler.step()
 
             model.eval()
             val_loss = 0.0
@@ -147,21 +155,22 @@ def main():
             # fig.canvas.draw()
             # fig.canvas.flush_events() 
 
-            print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}')
+            print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.6f}, Validation Loss: {val_loss:.6f}, lr = {lr:.4f}, duration = {(time.time()-start_train):.4f}')
         print()
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
+        return model
         
     
     cms = []
     precisions = []
     recalls = []
     snrs = []
-    noise_sigs = np.linspace(0.01, 0.7, 10)
+    noise_sigs = np.linspace(0.1, 0.8, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader, test_loader = get_loaders(s)
-        train_model(train_loader, val_loader)
+        model = train_model(train_loader, val_loader)
         model.eval()
         with torch.no_grad():
             snr = get_snr(test_loader)

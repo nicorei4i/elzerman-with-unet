@@ -129,20 +129,20 @@ def plot_unet(model, test_loader, model_dir, snr):
 
         fig.suptitle('Validation Traces')
 
-        axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
-        axs[0].tick_params(labelbottom=False)
-        axs[0].legend()
-
-        axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
+        axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
         axs[1].tick_params(labelbottom=False)
         axs[1].legend()
 
-        axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[2].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
         axs[2].tick_params(labelbottom=False)
         axs[2].legend()
 
-        axs[3].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
         axs[3].legend()
+
+        axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[0].tick_params(labelbottom=False)
+        axs[0].legend()
         #plt.show(block=False)
         
         plt.savefig(os.path.join(model_dir, f'unet_{snr}_{i}.pdf'))  # Save each figure
@@ -173,17 +173,17 @@ def plot_aenc(model, test_loader, model_dir, snr):
 
         fig.suptitle('Validation Traces')
 
-        axs[0].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
-        axs[0].tick_params(labelbottom=False)
-        axs[0].legend()
-
-        #axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
-        axs[1].plot(decoded_test_data[i, 0, :], label='denoised', color='mediumblue', linewidth=0.9)
+        axs[1].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
         axs[1].tick_params(labelbottom=False)
         axs[1].legend()
 
-        axs[2].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        #axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[2].plot(decoded_test_data[i, 0, :], label='denoised', color='mediumblue', linewidth=0.9)
         axs[2].legend()
+
+        axs[0].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[0].tick_params(labelbottom=False)
+        axs[0].legend()
         #plt.show(block=False)
        
         plt.savefig(os.path.join(model_dir, f'aenc_{snr}_{i}.pdf'))  # Save each figure
@@ -233,12 +233,13 @@ def get_scores_unet(model, test_loader):
             m = torch.nn.Softmax(dim=1)
             decoded_test_data = m(decoded_test_data)
             decoded_test_data = decoded_test_data.cpu().numpy()
-            prediction_class = decoded_test_data.argmax(axis=1)
+            prob_1 = decoded_test_data[:, 1, :]
+            #prediction_class = decoded_test_data.argmax(axis=1)
             # prediction_class = decoded_test_data.numpy().squeeze(1)
-            for i, pred_trace in enumerate(prediction_class):                   
-                selection = invert(pred_trace[start_read:end_read])
+            for i, prob in enumerate(prob_1):                   
+                selection = [prob_1[start_read:end_read]< 0.001]
                 # selection = [pred_trace[start_read:end_read] < 0.001]
-                selection = np.array(selection)
+                #selection = np.array(selection, dtype=np.float32)
                 current_mask = invert(batch_y[i, :][start_read:end_read])
                 
                 if selection.any() and current_mask.any():

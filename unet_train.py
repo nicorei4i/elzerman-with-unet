@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.sgd
+import torch.optim.lr_scheduler as lr_scheduler
 from unet_model import UNet
 from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
@@ -19,8 +20,12 @@ def main():
     # Check if GPU is available
     print('GPU available: ', torch.cuda.is_available())
 
-    # Set device to GPU if available, else CPU
+    # Set device to GPU if available, else CPUsq
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device_str = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if device_str == 'cuda': 
+        torch.backends.cudnn.benchmark = True
+
     #device='cpu'
     print(device)
 
@@ -85,9 +90,9 @@ def main():
         val_dataset = SimDataset(hdf5_file_path_val, scale_transform=val_scaler, noise_transform=noise_transform)
         test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=noise_transform)
         
-        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
+        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
         
         return train_loader, val_loader, test_loader
 
@@ -96,38 +101,51 @@ def main():
 
     # Initialize model, loss function, and optimizer
     
-    model = UNet().to(device)  
-    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
-
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)  
+    
+   
     # Training loop with validation
     def train_model(train_loader, val_loader):
+        start = time.time()
+        model = UNet().to(device)  
+        print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01) 
+        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1, end_factor=0.1, total_iters=25)
         print('Start training...')
         train_losses = []
         val_losses = []
 
         num_epochs = 25
-        start = time.time()
+        
         for epoch in range(num_epochs):  
+            start_train = time.time()
             model.train()
             train_loss = 0.0
+            scaler = torch.GradScaler(device_str)
+
             for batch_x, batch_y in train_loader:  
+                
                 optimizer.zero_grad()
                 batch_x = batch_x.to(device)
                 batch_y = batch_y.to(device).squeeze(1).long()
-
-                output = model(batch_x)  
-                loss = criterion(output, batch_y)  
-                loss.backward()  
-                optimizer.step()  
+                with torch.autocast(device_str):
+                    output = model(batch_x)  
+                    loss = criterion(output, batch_y)  
+                
+                scaler.scale(loss).backward() 
+                scaler.step(optimizer)
+                scaler.update()  
 
                 train_loss += loss.item() * batch_x.size(0)
+            
             train_loss /= len(train_loader.dataset)
             train_losses.append(train_loss)
+            lr = optimizer.param_groups[0]["lr"]
+            scheduler.step()
 
             model.eval()
             val_loss = 0.0
+            start_val = time.time()
             with torch.no_grad():  
                 for batch_x, batch_y in val_loader:  
                     batch_x = batch_x.to(device)
@@ -137,7 +155,8 @@ def main():
                     val_loss += loss.item() * batch_x.size(0)
             val_loss /= len(val_loader.dataset)
             val_losses.append(val_loss)
-
+            
+            
             # train_line.set_ydata(train_losses)
             # train_line.set_xdata(np.arange(1, epoch+2, 1))
             # val_line.set_ydata(val_losses)
@@ -147,20 +166,21 @@ def main():
             # fig.canvas.draw()
             # fig.canvas.flush_events() 
 
-            print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}')
+            print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}, lr = {lr}, duration = {time.time()-start_train}')
         print()
         print(f"Finished Training in {(time.time() - start):.1f}")
         print()
+        return model
     
     cms = []
     precisions = []
     recalls = []
     snrs = []
-    noise_sigs = np.linspace(0.01, 0.7, 10)
+    noise_sigs = np.linspace(0.1, 0.8, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         train_loader, val_loader, test_loader = get_loaders(s)
-        train_model(train_loader, val_loader)
+        model = train_model(train_loader, val_loader)
         model.eval()
         with torch.no_grad():
             snr = get_snr(test_loader)
