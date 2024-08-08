@@ -458,9 +458,10 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_elzerman_traces('sim_elzerman_traces_train1k', 1000)
+    save_elzerman_traces('sim_elzerman_traces_train', 100)
     save_elzerman_traces('sim_elzerman_traces_val', 100)
-    save_elzerman_traces('sim_elzerman_traces_test1k', 1000)
+    save_elzerman_traces('sim_elzerman_traces_test', 1000)
+    save_elzerman_traces('sim_elzerman_traces_train_1k', 1000)
     
 
 if __name__ == '__main__':

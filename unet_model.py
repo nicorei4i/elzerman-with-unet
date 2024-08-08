@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import models
-from torch.nn.functional import relu
+from torch.nn.functional import gelu
 
 #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
 device='cpu'
@@ -14,15 +14,15 @@ class encoder_block(torch.nn.Module):
         self.conv1 = torch.nn.Conv1d(in_channels, out_channels, 3, padding=1)
         self.conv2 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
         
-        self.relu = torch.nn.ReLU()
+        self.gelu = torch.nn.GELU()
         self.pool = torch.nn.MaxPool1d(kernel_size=pool_size, stride=pool_size, ceil_mode=True)
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.relu(x)        
+        x = self.gelu(x)        
 
         x = self.conv2(x)
-        x = self.relu(x)
+        x = self.gelu(x)
 
         xp = self.pool(x)
         return xp, x
@@ -34,15 +34,15 @@ class bottleneck_block(torch.nn.Module):
         self.conv2 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
         #self.conv3 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
         
-        self.relu = torch.nn.ReLU()
+        self.gelu = torch.nn.GELU()
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.relu(x)
+        x = self.gelu(x)
         x = self.conv2(x)
-        x = self.relu(x)
+        x = self.gelu(x)
         #x = self.conv3(x)
-        #x = self.relu(x)
+        #x = self.gelu(x)
         
         return x
 
@@ -57,16 +57,16 @@ class decoder_block(torch.nn.Module):
         #self.conv3 = torch.nn.Conv1d(out_channels, out_channels, 3, padding=1)
         
 
-        self.relu = torch.nn.ReLU()
+        self.gelu = torch.nn.GELU()
 
     def forward(self, x, encoder_x):
         x = self.upconv(x)
         x = self.conv1(torch.cat([x, encoder_x], dim=1))
-        x = self.relu(x)
+        x = self.gelu(x)
         x = self.conv2(x)
-        x = self.relu(x)    
+        x = self.gelu(x)    
         #x = self.conv3(x)
-        #x = self.relu(x)       
+        #x = self.gelu(x)       
 
 
         return x

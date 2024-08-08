@@ -237,9 +237,9 @@ def get_scores_unet(model, test_loader):
             #prediction_class = decoded_test_data.argmax(axis=1)
             # prediction_class = decoded_test_data.numpy().squeeze(1)
             for i, prob in enumerate(prob_1):                   
-                selection = [prob_1[start_read:end_read]< 0.001]
+                selection = [prob[start_read:end_read]< 0.001]
                 # selection = [pred_trace[start_read:end_read] < 0.001]
-                #selection = np.array(selection, dtype=np.float32)
+                selection = np.array(selection)
                 current_mask = invert(batch_y[i, :][start_read:end_read])
                 
                 if selection.any() and current_mask.any():
