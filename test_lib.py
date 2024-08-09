@@ -205,7 +205,7 @@ def get_snr(loader):
     noise_powers = np.mean(noise**2, axis=1)
 
 
-    snr = np.mean(signal_powers/noise_powers)
+    snr = np.mean(1/noise_powers)
 
     snr = 10* np.log10(snr)
 
@@ -235,7 +235,7 @@ def get_scores_unet(model, test_loader):
             decoded_test_data = decoded_test_data.cpu().numpy()
             #prob_1 = decoded_test_data[:, 1, :]
             prediction_class = decoded_test_data.argmax(axis=1)
-            prediction_class = decoded_test_data.numpy().squeeze(1)
+            #prediction_class = decoded_test_data.numpy().squeeze(1)
             for i, pred_trace in enumerate(prediction_class):                   
                 #selection = [prob[start_read:end_read]< 0.1]
                 selection = [pred_trace[start_read:end_read] == 0]

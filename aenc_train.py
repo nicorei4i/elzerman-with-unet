@@ -26,9 +26,13 @@ def main():
     # Set up directory paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_elzerman_traces_train'  
-    val_name = 'sim_elzerman_traces_val'  
-    test_name = 'sim_elzerman_traces_test'  
+    file_name = 'sim_elzerman_traces_train_g40k'  
+    val_name = 'sim_elzerman_traces_val_g40k'  
+    test_name = 'sim_elzerman_traces_test_g40k'  
+
+    print(file_name)
+    print(val_name)
+    print(test_name)
 
     # Construct full paths for the HDF5 files
     hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  

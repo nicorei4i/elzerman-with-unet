@@ -22,6 +22,7 @@ class SimDataset(Dataset):
         self.file_path = file_path  # Store the file path
         self.scale_transform = scale_transform  # Store the transform
         self.noise_transform = noise_transform
+        
         file = h5py.File(file_path, 'r')  # Open the HDF5 file in read mode
         self.keys = list(file.keys())  # Get the list of keys (datasets) in the file
         random.shuffle(self.keys)  # Shuffle the keys to randomize the order of access

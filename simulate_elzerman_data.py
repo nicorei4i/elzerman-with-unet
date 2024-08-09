@@ -351,8 +351,8 @@ def main():
     t_R = 1.0e-3
     t_U = 1.5e-3
     
-    lambda_in = 3500.0
-    lambda_out = 2400.0
+    lambda_in = 40000.0
+    lambda_out = 40000.0
     s=0.01
     noise_std = s  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
@@ -458,10 +458,9 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_elzerman_traces('sim_elzerman_traces_train', 100)
-    save_elzerman_traces('sim_elzerman_traces_val', 100)
-    save_elzerman_traces('sim_elzerman_traces_test', 1000)
-    save_elzerman_traces('sim_elzerman_traces_train_1k', 1000)
+    save_elzerman_traces('sim_elzerman_traces_train_g40k', 10000)
+    save_elzerman_traces('sim_elzerman_traces_val_g40k', 100)
+    save_elzerman_traces('sim_elzerman_traces_test_g40k', 10000)
     
 
 if __name__ == '__main__':
