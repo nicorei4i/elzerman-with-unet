@@ -1,0 +1,3 @@
+GPU available:  True
+GPU available:  True
+cuda

@@ -233,12 +233,12 @@ def get_scores_unet(model, test_loader):
             m = torch.nn.Softmax(dim=1)
             decoded_test_data = m(decoded_test_data)
             decoded_test_data = decoded_test_data.cpu().numpy()
-            prob_1 = decoded_test_data[:, 1, :]
-            #prediction_class = decoded_test_data.argmax(axis=1)
-            # prediction_class = decoded_test_data.numpy().squeeze(1)
-            for i, prob in enumerate(prob_1):                   
-                selection = [prob[start_read:end_read]< 0.001]
-                # selection = [pred_trace[start_read:end_read] < 0.001]
+            #prob_1 = decoded_test_data[:, 1, :]
+            prediction_class = decoded_test_data.argmax(axis=1)
+            prediction_class = decoded_test_data.numpy().squeeze(1)
+            for i, pred_trace in enumerate(prediction_class):                   
+                #selection = [prob[start_read:end_read]< 0.1]
+                selection = [pred_trace[start_read:end_read] == 0]
                 selection = np.array(selection)
                 current_mask = invert(batch_y[i, :][start_read:end_read])
                 
@@ -283,7 +283,7 @@ def get_scores_aenc(model, test_loader):
             prediction_class = decoded_test_data.numpy().squeeze(1)
             for i, pred_trace in enumerate(prediction_class):                   
                 #selection = invert(pred_trace[start_read:end_read])
-                selection = [pred_trace[start_read:end_read] < 0.001]
+                selection = [pred_trace[start_read:end_read] < 0.01]
                 selection = np.array(selection)
                 current_mask = invert(batch_y[i, :][start_read:end_read])
                 
