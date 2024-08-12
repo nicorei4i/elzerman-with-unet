@@ -33,9 +33,9 @@ def main():
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_elzerman_traces_train_g40k'  
-    val_name = 'sim_elzerman_traces_val_g40k'  
-    test_name = 'sim_elzerman_traces_test_g40k'  
+    file_name = 'sim_elzerman_traces_train_g400'  
+    val_name = 'sim_elzerman_traces_val_g400'  
+    test_name = 'sim_elzerman_traces_test_g400'  
 
     print(file_name)
     print(val_name)
