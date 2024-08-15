@@ -74,3 +74,4 @@ plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = \Gamma_{out} = 
 file_name_unet = 'unet_scores_400'
 file_name_aenc = 'aenc_scores_400'
 plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = \Gamma_{out} = 400$ Hz', 'comparison_low.pdf')
+#%%

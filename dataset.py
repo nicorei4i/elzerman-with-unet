@@ -62,16 +62,42 @@ class SimDataset(Dataset):
             #print('No noise transform! Data will be labeled to itself!')
 
         if self.scale_transform:  # Apply the scale transform if it exists
-            clean_trace = self.scale_transform(clean_trace)
+            #clean_trace = self.scale_transform(clean_trace)
             noisy_trace = self.scale_transform(noisy_trace)
-        #clean_trace = clean_trace.reshape(-1)
-        #noisy_trace = noisy_trace.reshape(-1)
-        #print(np.shape(noisy_trace))
-        return torch.Tensor(noisy_trace), torch.Tensor(clean_trace) # Convert the numpy array to a PyTorch tensor and return it
+        else:
+            clean_trace = clean_trace.reshape(1, -1)
+            noisy_trace = noisy_trace.reshape(1, -1)
+            #print(np.shape(noisy_trace))
+        return torch.tensor(noisy_trace, dtype=torch.float32), torch.tensor(clean_trace, dtype=torch.float32) # Convert the numpy array to a PyTorch tensor and return it
+
+class MeasuredNoise(object):
+    def __init__(self, noise_traces, amps, amps_dist=None):
+        self.amps = amps 
+        self.amps_dist = amps_dist
+        self.noise_traces = noise_traces
+
+    def __call__(self, trace, noise_scaling=None):
+        
+        amp = np.random.choice(self.amps, p=self.amps_dist)
+        #print(amp)
+        i_noise = np.random.randint(self.noise_traces.shape[0])
+        j_noise = np.random.randint(self.noise_traces.shape[1])
+        noise_trace = self.noise_traces[i_noise, j_noise]
+
+        start = np.random.randint(0, len(noise_trace)-len(trace))
+        stop = start + len(trace)
+
+
+        noise = noise_trace[start:stop]
+        noise -= np.mean(noise)
+        noise /= np.max(np.abs(noise))
+        noisy_trace = trace + amp*noise
+        return noisy_trace
+
 
 
 class Noise(object):
-    def __init__(self, shape, sim_t, sigma, amps, freqs):
+    def __init__(self, shape, sim_t, sigma, amps, freqs, weights_sigma=None, weights_amps=None):
         """
         Initialize the Noise object with the specified parameters.
 
@@ -80,12 +106,14 @@ class Noise(object):
         sigma (float): Standard deviation for noise generation.
         sim_t (float): Total simulation time.
         """
+        self.sigma_pos = sigma
         self.shape = shape
         self.T = sim_t
-        self.amps = amps
+        self.amps_pos = amps
         self.freqs = freqs
-        self.white_sigma = sigma
-        self.pink_sigma = 0.1 * sigma
+        
+        self.weights_sigma = weights_sigma
+        self.weights_amps = weights_amps
 
     def __call__(self, trace, noise_scaling=None):
         """
@@ -98,6 +126,24 @@ class Noise(object):
         Returns:
         array-like: The noisy trace.
         """
+        if hasattr(self.sigma_pos, "__len__"):
+            if hasattr(self.weights_sigma, "__len__"): 
+                
+                self.sigma = np.random.choice(self.sigma_pos, p=self.weights_sigma)
+            else:            
+                self.sigma = np.random.choice(self.sigma_pos)
+        else: 
+            self.sigma = self.sigma_pos
+
+        self.white_sigma = self.sigma
+        self.pink_sigma = 0.1 * self.sigma
+
+        if len(self.amps_pos.shape) == 2:
+            if len(self.weights_amps.shape) == 2:
+                self.amps = [np.random.choice(self.amps_pos[i, :], p=self.weights_amps[i, :]) for i in range(self.amps_pos.shape[0])] 
+            else:
+                self.amps = [np.random.choice(self.amps_pos[i, :]) for i in range(self.amps_pos.shape[0])] 
+
         if noise_scaling is not None:
             self.pink_sigma = noise_scaling * self.white_sigma
 

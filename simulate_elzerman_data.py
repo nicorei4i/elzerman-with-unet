@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 import gc
 from numba import njit
-from scipy.optimize import curve_fit
+
 
 # possible states: empty (0), spin up (1), spin down (-1)
 # possible transitions: tunneling in (up and down), tunneling out (up and down)(, decay (up to down))
@@ -41,19 +41,19 @@ def get_lambda_out(E, spin, lambda_out, B, T):
 
 
 @njit
-def generate_elzerman_signal(lambdas, times, voltages, N, signal_amp, T=9.0e-3, B=1.7):
+def generate_elzerman_signal(lambdas, times, voltages, N_traces, n_samples_tot, signal_amp, T=9.0e-3, B=1.7):
     lambda_in, lambda_out, lambda_flip = lambdas
     t_L, t_W, t_R, t_U = times
     V_L, V_W, V_R, V_U = voltages
 
     t_rep = t_L + t_W + t_R + t_U
-    n_samples = int(8192 / N)
-    dt = N * t_rep/(8192)
-    continuous_states_total = np.zeros(8192, dtype=np.float64)
+    n_samples = int(n_samples_tot / N_traces)
+    dt = N_traces * t_rep/(n_samples_tot)
+    continuous_states_total = np.zeros(n_samples_tot, dtype=np.float32)
     n_blip = 0
 
     state = 0
-    for i in range(N):
+    for i in range(N_traces):
         time = 0.0
         state = 0
         times = np.array([0], dtype=np.float64)
@@ -215,13 +215,13 @@ def generate_elzerman_signal(lambdas, times, voltages, N, signal_amp, T=9.0e-3, 
             states = np.append(states, state)
         
         states = np.abs(states)
-        continuous_states = np.zeros(n_samples, dtype=np.float64)
+        continuous_states = np.zeros(n_samples, dtype=np.float32)
         for j in range(len(times) - 1):
             start_index = int(times[j] / dt)
             end_index = int(times[j+1] / dt)
             continuous_states[start_index:end_index] = states[j]
     
-        continuous_states = (continuous_states * 2 - 1) * signal_amp
+        #continuous_states = (continuous_states * 2 - 1) * signal_amp
         continuous_states_total[i * n_samples:(i + 1) * n_samples] = continuous_states
     
         blip_mask = np.zeros(n_samples, dtype=np.int64)
@@ -351,8 +351,8 @@ def main():
     t_R = 1.0e-3
     t_U = 1.5e-3
     
-    lambda_in = 40000.0
-    lambda_out = 40000.0
+    lambda_in = 4200.0
+    lambda_out = 3500.0
     s=0.01
     noise_std = s  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
@@ -364,11 +364,11 @@ def main():
     
     signal_amp = 1.0
 
-
-    _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
+    n_samples_tot = 15000
+    _, mask, trace = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1,n_samples_tot, signal_amp)
     trace, snr = noise(trace, T, s, interference_amps, interference_freqs)
     print(f'Signal to noise: {snr} dB')
-    times = np.arange(0, 8192, 1)
+    times = np.arange(0, n_samples_tot, 1)
     fig, (ax, bx) = plt.subplots(2, 1)
     ax.plot(trace, label='Simulated test data')
     ax.plot(times[mask==1], trace[mask==1], color='red', linewidth=5, alpha=0.5, label='Actual anomalies')
@@ -457,30 +457,57 @@ def main():
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
 
+    def save_read_traces(file_name, n):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        trace_dir = os.path.join(current_dir, 'traces')
+        os.makedirs(trace_dir, exist_ok=True)  
+        hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
 
-    save_elzerman_traces('sim_elzerman_traces_train_g40k', 10000)
-    save_elzerman_traces('sim_elzerman_traces_val_g40k', 100)
-    save_elzerman_traces('sim_elzerman_traces_test_g40k', 10000)
-    
+        with h5py.File(hdf5_file_path, 'w') as file:
+            start_time = time.perf_counter()
+            
+            times = np.array([t_L, t_L + t_W, t_L + t_W + t_R, t_L + t_W + t_R + t_U])
+            n_samples = 15000
+            times_indices = times * n_samples / T
+            times_indices = times_indices.astype(np.int64)
+            start_read, end_read = times_indices[1], times_indices[2]
+            if (end_read - start_read)%2 == 1:
+                end_read = end_read - 1
+            print('Length of read trace: ', end_read - start_read)
+            for i in range(n):
+                _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
+                data = data[start_read:end_read]
+                name = f'trace_{i}'
+                if name in file:
+                    del file[name]  # Delete the existing dataset
+                file.create_dataset(name, data=data)
+                #print(name)
+                # Explicitly delete variables and force garbage collection
+                del data
+                gc.collect()
+                remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
+                
+                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time}s', 'complete', length=25)
+                
+            end_time = time.perf_counter()
+            print('...took {}s\n'.format((end_time - start_time)))
+
+
+    save_read_traces('sim_read_traces_train_10k', 10000)
+    save_read_traces('sim_read_traces_val', 100)
+    #save_read_traces('sim_read_traces_test_1k', 1000)
+
 
 if __name__ == '__main__':
     main()
 #%%
-current_dir = os.path.dirname(os.path.abspath(__file__))
-train_file = 'sim_elzerman_traces_train'
-test_file = 'sim_elzerman_traces_test'
-val_file = 'sim_elzerman_traces_val'
-mask_file = 'sim_elzerman_test_masks'
-
-hdf5_file_path_train = os.path.join(current_dir, '{}.hdf5'.format(train_file))
-hdf5_file_path_test = os.path.join(current_dir, '{}.hdf5'.format(test_file))
-hdf5_file_path_val = os.path.join(current_dir, '{}.hdf5'.format(val_file))
-hdf5_file_path_mask = os.path.join(current_dir, '{}.hdf5'.format(mask_file))
 
 
 
-def show_data(hdf5_file_path):
-    
+def show_data(file_name):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    current_dir = os.path.join(current_dir, 'traces')
+    hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))
     with h5py.File(hdf5_file_path, 'r') as h5f:
         all_keys = h5f.keys() 
     
