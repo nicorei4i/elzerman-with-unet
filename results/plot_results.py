@@ -55,7 +55,7 @@ def plot_comparison(file_name_unet, file_name_aenc, title='Performance compariso
     ax[2].set_ylabel('score')
     fig.suptitle(title)
     fig.tight_layout()
-    plt.savefig(figname, format='pdf')
+    plt.savefig(figname, format='svg', )
 
 
 
@@ -63,15 +63,15 @@ def plot_comparison(file_name_unet, file_name_aenc, title='Performance compariso
 
 file_name_unet = 'unet_scores_4_2_3_5k'
 file_name_aenc = 'aenc_scores_4_2_3_5k'
-plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = 3500$ Hz, $\Gamma_{out} = 4200$ Hz', 'comparison_mid.pdf')
+plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = 3500$ Hz, $\Gamma_{out} = 4200$ Hz', 'comparison_mid.svg')
 
 
 file_name_unet = 'unet_scores_40k'
 file_name_aenc = 'aenc_scores_40k'
-plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = \Gamma_{out} = 40$ kHz', 'comparison_high.pdf')
+plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = \Gamma_{out} = 40$ kHz', 'comparison_high.svg')
 
 
 file_name_unet = 'unet_scores_400'
 file_name_aenc = 'aenc_scores_400'
-plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = \Gamma_{out} = 400$ Hz', 'comparison_low.pdf')
+plot_comparison(file_name_unet, file_name_aenc, r'$\Gamma_{in} = \Gamma_{out} = 400$ Hz', 'comparison_low.svg')
 #%%

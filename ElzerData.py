@@ -57,39 +57,49 @@ class ElzerData(HDF5Data):
         """
         Saves the sliced traces in an HDF5 file.
         """
-        try:
-            if self.sliced_array is None:
-                self.cut_traces()  # Ensure traces are sliced before saving
-            file_path = os.path.join(self.wdir, '{}.hdf5'.format(file_name))
+        # try:
+        if self.sliced_array is None:
+            self.cut_traces()  # Ensure traces are sliced before saving
+        file_path = os.path.join(self.wdir, '{}.hdf5'.format(file_name))
 
-            self.read_traces = np.array(self.read_traces)
-            self.read_traces = self.read_traces.reshape(-1, self.read_traces.shape[2])
-
-
-
-            with h5py.File(file_path, 'w') as f:
-                for i, trace in enumerate(self.read_traces):
-                    #time = int(self.t_load[0, i])
-                    dataset_name = f'ReadTraces_{i}'
-                    ##print(dataset_name)
-                    if dataset_name in f:
-                        del f[dataset_name]  # Delete the existing dataset
-                    f.create_dataset(dataset_name, data=trace)
-            
-            single_traces_file_name = f'{file_name}_whole'
-            file_path = os.path.join(self.wdir, '{}.hdf5'.format(single_traces_file_name))
-            with h5py.File(file_path, 'w') as f:
-                for i, trace in enumerate(self.sliced_array):
-                    time = int(self.t_load[0, i])
-                    dataset_name = f'Traces_{time}'
-                    ##print(dataset_name)
-                    if dataset_name in f:
-                        del f[dataset_name]  # Delete the existing dataset
-                    f.create_dataset(dataset_name, data=trace)
+        self.read_traces = np.array(self.read_traces)
+        self.read_traces = self.read_traces.reshape(-1, self.read_traces.shape[2])
 
 
-        except Exception as e:
-            print(f"Error creating file {file_name}: {e}")
+
+        with h5py.File(file_path, 'w') as f:
+            for i, trace in enumerate(self.read_traces):
+                #time = int(self.t_load[0, i])
+                dataset_name = f'ReadTraces_{i}'
+                ##print(dataset_name)
+                if dataset_name in f:
+                    del f[dataset_name]  # Delete the existing dataset
+                f.create_dataset(dataset_name, data=trace)
+        
+        max_cols = max(array.shape[1] for array in self.sliced_array)
+
+        # Step 2: Initialize an array filled with NaNs
+        padded_arrays = np.full((len(self.sliced_array), self.sliced_array[0].shape[0], max_cols), np.nan)
+
+        # Step 3: Copy the data into the new array
+        for i, array in enumerate(self.sliced_array):
+            padded_arrays[i, :, :array.shape[1]] = array
+        
+        self.padded_arrays = padded_arrays.reshape(-1, padded_arrays.shape[2])
+        single_traces_file_name = f'{file_name}_whole'
+        file_path = os.path.join(self.wdir, '{}.hdf5'.format(single_traces_file_name))
+        with h5py.File(file_path, 'w') as f:
+            for i, trace in enumerate(self.padded_arrays):
+                #time = int(self.t_load[0, i])
+                dataset_name = f'Traces_{i}'
+                ##print(dataset_name)
+                if dataset_name in f:
+                    del f[dataset_name]  # Delete the existing dataset
+                f.create_dataset(dataset_name, data=trace)
+
+
+        # except Exception as e:
+        #     print(f"Error creating file {file_name}: {e}")
 
 
     def save_in_file(self):

@@ -8,9 +8,9 @@ from simulate_elzerman_data import generate_elzerman_signal
 from ElzerData import ElzerData
 import time
 from scipy.signal import welch
+plt.switch_backend('TkAgg') 
 
-
-noise_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5'
+#noise_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5'
 real_trace_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/494_2_3T_elzermann_test.hdf5'
 
 
@@ -22,24 +22,28 @@ print('Loading data...')
 script_dir = os.path.dirname(os.path.abspath(__file__))
 if not os.path.exists(trace_dir):
     os.makedirs(wdir=trace_dir)
-hdf5Data_noise = ElzerData(wdir=trace_dir)
-hdf5Data_noise.set_path(noise_path)
+#hdf5Data_noise = ElzerData(wdir=trace_dir)
+#hdf5Data_noise.set_path(noise_path)
 
-hdf5Data_noise.set_filename()
-hdf5Data_noise.set_traces()
+#hdf5Data_noise.set_filename()
+#hdf5Data_noise.set_traces()
 
-hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
-noise_dt = hdf5Data_noise.traces_dt
-noise_traces = hdf5Data_noise.traces #self.data.traces
-noise_time_axis = noise_dt * np.arange(0, len(noise_traces[0][0]))
-print('Noise traces: ', noise_traces.shape)  
+#hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
+#noise_dt = hdf5Data_noise.traces_dt
+#noise_traces = hdf5Data_noise.traces #self.data.traces
+#noise_time_axis = noise_dt * np.arange(0, len(noise_traces[0][0]))
+#print('Noise traces: ', noise_traces.shape)  
 
 
 hdf5Data_traces = ElzerData(wdir=trace_dir, t_ini=1000, t_read=1000,  sampling_rate=5)
 hdf5Data_traces.set_path(real_trace_path)
-
 hdf5Data_traces.set_filename()
 hdf5Data_traces.set_traces()
+
+real_traces = hdf5Data_traces.traces
+fig, ax = plt.subplots(1, 1)
+ax.plot(real_traces[46][78])
+
 
 hdf5Data_traces.set_traces_dt() # self.data.set_traces_dt()
 traces_dt = hdf5Data_traces.traces_dt
@@ -58,21 +62,31 @@ hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
 #     sliced_traces = np.array([file[key] for key in all_keys],dtype=np.float32)  
 #     print('Sliced measured traces: ', sliced_traces.shape)  
 sliced_traces = np.array(hdf5Data_traces.read_traces)
-whole_traces = hdf5Data_traces.sliced_array
+whole_traces = np.array(hdf5Data_traces.padded_arrays)
 print('Sliced measured traces: ', sliced_traces.shape)  
+print('Sliced whole measured traces: ', whole_traces.shape)  
 
-traces_time_axis = traces_dt * np.arange(0, len(noise_traces[0][0]))
+
+#traces_time_axis = traces_dt * np.arange(0, len(noise_traces[0][0]))
 
 
 file_name = 'sim_read_traces_train'  
 hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))   
 
-with h5py.File(hdf5_file_path, 'r') as file:  
-    all_keys = file.keys()  
-    sim_traces = np.array([file[key] for key in all_keys], dtype=np.float32)  
-    print('Simulated read traces: ', sim_traces.shape)  
+# with h5py.File(hdf5_file_path, 'r') as file:  
+#     all_keys = file.keys()  
+#     sim_traces = np.array([file[key] for key in all_keys], dtype=np.float32)  
+#     print('Simulated read traces: ', sim_traces.shape)  
 
+for i, trace in enumerate(whole_traces):
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(trace)
+    fig.suptitle(f'Trace {i}') 
+    mng = plt.get_current_fig_manager()
+    mng.window.state('zoomed')
 
+    plt.show(block=True)
+ 
 #%%
 for i_sim in np.random.randint(0, len(sim_traces), 10): 
     i_noise = np.random.randint(noise_traces.shape[0])

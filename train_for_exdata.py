@@ -35,10 +35,11 @@ def main():
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_read_traces_train_10k'  
+    file_name = 'sim_read_traces_train_1k'  
     val_name = 'sim_read_traces_val'  
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
+    test_trace_name = 'test_trace'
 
     
 
@@ -50,17 +51,22 @@ def main():
     hdf5Data_noise.set_traces()
 
     hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
-    noise_dt = hdf5Data_noise.traces_dt
     noise_traces = hdf5Data_noise.traces #self.data.traces
     
     print(file_name)
     print(val_name)
     print(test_name)
+    print(test_whole_name)
+    
 
     # Construct full paths for the HDF5 files
     hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
     hdf5_file_path_val = os.path.join(trace_dir, '{}.hdf5'.format(val_name))  
     hdf5_file_path_test = os.path.join(trace_dir, '{}.hdf5'.format(test_name))  
+    hdf5_file_path_whole = os.path.join(trace_dir, '{}.hdf5'.format(test_whole_name))  
+    test_trace_path = os.path.join(trace_dir, '{}.npy'.format(test_trace_name))  
+
+    test_trace = np.load(test_trace_path)
 
     # Read data from the training HDF5 file
     with h5py.File(hdf5_file_path, 'r') as file:  
@@ -79,19 +85,24 @@ def main():
             test_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
             print(test_data.shape)  
 
+    # with h5py.File(hdf5_file_path_whole, 'r') as file:  
+    #         all_keys = file.keys()  
+    #         whole_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
+    #         print(whole_data.shape)  
     # Define parameters for noise and simulation
   
     T = 0.006  
     n_samples = 8192
 
+    train_scaler = MinMaxScalerTransform()
+    test_scaler = MinMaxScalerTransform()
 
     def get_loaders(amps, amps_dist):
     # Define parameters for interference signals
         # Create instances of Noise and MinMaxScalerTransform classes
         noise_transform = MeasuredNoise(noise_traces=noise_traces, amps=amps, amps_dist=amps_dist)
         #noise_transform = 
-        train_scaler = MinMaxScalerTransform()
-        test_scaler = MinMaxScalerTransform()
+        
 
 
 
@@ -202,7 +213,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(1, 1.1, 100)
+    amps = np.linspace(0.1, 2, 100)
     x = np.linspace(-1, 1, len(amps))
     amps_dist = np.exp(0.5*(-((x)/0.5)**2))
     amps_dist /= np.sum(amps_dist)
@@ -267,6 +278,30 @@ def main():
                 ax.set_ylim(-0.1, 1.1)
             #plt.show(block=False)
             plt.savefig(os.path.join(model_dir, f'unet_test_{i}.pdf'))  # Save each figure
+
+        x = torch.tensor(test_scaler(test_trace).reshape(1,1,-1), dtype=torch.float32)
+        decoded_test_data = model(x)
+        m = torch.nn.Softmax(dim=1)
+        decoded_test_data = m(decoded_test_data)
+        decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
+        prediction_class = decoded_test_data.argmax(axis=1)
+        x = x.cpu().numpy()
+        
+
+        fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
+        fig.suptitle('Validation Traces')
+        axs[0].plot(x.reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+        axs[0].tick_params(labelbottom=False)
+        axs[1].plot(prediction_class[0], label='Denoised', color='mediumblue', linewidth=0.9)
+        axs[1].tick_params(labelbottom=False)
+        axs[2].plot(decoded_test_data[0, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        for ax in axs:
+            ax.legend()
+            ax.set_ylim(-0.1, 1.1)
+        #plt.show(block=False)
+        plt.savefig(os.path.join(model_dir, f'unet_test_trace.pdf'))  # Save each figure
+
+            
         print('Figures saved')
 
 

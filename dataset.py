@@ -214,7 +214,7 @@ class MinMaxScalerTransform:
         feature_range (tuple): Desired range of transformed data.
         """
         self.scaler = MinMaxScaler(feature_range=feature_range)
-
+        
     def fit_data(self, data):
         """
         Fit the MinMaxScaler to the data.

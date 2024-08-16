@@ -353,6 +353,8 @@ def main():
     
     lambda_in = 4200.0
     lambda_out = 3500.0
+    n_samples = 15000
+
     s=0.01
     noise_std = s  # Standard deviation of Gaussian noise
     T = t_L + t_W + t_R + t_U  # Total simulation time in seconds
@@ -412,7 +414,7 @@ def main():
             start_time = time.perf_counter()
             for i in range(n):
             
-                _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
+                _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
                 name = f'trace_{i}'
                 if name in file:
                     del file[name]  # Delete the existing dataset
@@ -438,7 +440,7 @@ def main():
             start_time = time.perf_counter()
             for i in range(n):
             
-                _, mask, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, signal_amp)
+                _, mask, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
                 name = f'trace_{i}'
                 if name in file:
                     del file[name]  # Delete the existing dataset
@@ -467,7 +469,7 @@ def main():
             start_time = time.perf_counter()
             
             times = np.array([t_L, t_L + t_W, t_L + t_W + t_R, t_L + t_W + t_R + t_U])
-            n_samples = 15000
+            
             times_indices = times * n_samples / T
             times_indices = times_indices.astype(np.int64)
             start_read, end_read = times_indices[1], times_indices[2]
@@ -493,10 +495,14 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_read_traces('sim_read_traces_train_10k', 10000)
-    save_read_traces('sim_read_traces_val', 100)
+    # save_read_traces('sim_read_traces_train_10k', 10000)
+    # save_read_traces('sim_read_traces_val', 100)
     #save_read_traces('sim_read_traces_test_1k', 1000)
+    save_elzerman_traces('sim_elzerman_traces_train_1k', 1000)
+    save_elzerman_traces('sim_elzerman_traces_val', 100)
+    save_elzerman_traces('sim_elzerman_traces_train_10k', 10000)
 
+    
 
 if __name__ == '__main__':
     main()
