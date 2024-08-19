@@ -60,6 +60,7 @@ class ElzerData(HDF5Data):
         # try:
         if self.sliced_array is None:
             self.cut_traces()  # Ensure traces are sliced before saving
+            print('cutting traces')
         file_path = os.path.join(self.wdir, '{}.hdf5'.format(file_name))
 
         self.read_traces = np.array(self.read_traces)

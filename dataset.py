@@ -3,7 +3,7 @@ import numpy as np
 import random
 import torch
 from torch.utils.data import Dataset
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 class SimDataset(Dataset):
@@ -213,7 +213,8 @@ class MinMaxScalerTransform:
         Parameters:
         feature_range (tuple): Desired range of transformed data.
         """
-        self.scaler = MinMaxScaler(feature_range=feature_range)
+        #self.scaler = MinMaxScaler(feature_range=feature_range)
+        self.scaler = StandardScaler()
         
     def fit_data(self, data):
         """

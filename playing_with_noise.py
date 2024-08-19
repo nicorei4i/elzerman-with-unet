@@ -11,7 +11,7 @@ from scipy.signal import welch
 plt.switch_backend('TkAgg') 
 
 #noise_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5'
-real_trace_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/494_2_3T_elzermann_test.hdf5'
+real_trace_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/492_2_5T_elzermann_ - Copy.hdf5'
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +35,7 @@ if not os.path.exists(trace_dir):
 #print('Noise traces: ', noise_traces.shape)  
 
 
-hdf5Data_traces = ElzerData(wdir=trace_dir, t_ini=1000, t_read=1000,  sampling_rate=5)
+hdf5Data_traces = ElzerData(wdir=trace_dir, t_ini=1000, t_read=1000,  sampling_rate=2)
 hdf5Data_traces.set_path(real_trace_path)
 hdf5Data_traces.set_filename()
 hdf5Data_traces.set_traces()
@@ -51,7 +51,7 @@ traces = hdf5Data_traces.traces #self.data.traces
 print('Measured traces: ', traces.shape)  
 
 
-file_name = 'sliced_traces'  
+file_name = 'sliced_traces_small'  
 hdf5Data_traces.create_new_file_only_traces(file_name)
 #hdf5Data_traces.cut_traces()
 

@@ -35,7 +35,7 @@ def main():
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_read_traces_train_1k'  
+    file_name = 'sim_read_traces_train_10k'  
     val_name = 'sim_read_traces_val'  
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
@@ -213,7 +213,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(0.1, 2, 100)
+    amps = np.linspace(2, 3, 100)
     x = np.linspace(-1, 1, len(amps))
     amps_dist = np.exp(0.5*(-((x)/0.5)**2))
     amps_dist /= np.sum(amps_dist)
@@ -251,7 +251,7 @@ def main():
             axs[0].tick_params(labelbottom=False)
             for ax in axs:
                 ax.legend()
-                ax.set_ylim(-0.1, 1.1)
+                #ax.set_ylim(-0.1, 1.1)
             #plt.show(block=False)
             plt.savefig(os.path.join(model_dir, f'unet_val_{i}.pdf'))  # Save each figure
         print('Figures saved')
@@ -275,7 +275,7 @@ def main():
             axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
             for ax in axs:
                 ax.legend()
-                ax.set_ylim(-0.1, 1.1)
+                #ax.set_ylim(-0.1, 1.1)
             #plt.show(block=False)
             plt.savefig(os.path.join(model_dir, f'unet_test_{i}.pdf'))  # Save each figure
 
@@ -297,7 +297,7 @@ def main():
         axs[2].plot(decoded_test_data[0, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
         for ax in axs:
             ax.legend()
-            ax.set_ylim(-0.1, 1.1)
+            #ax.set_ylim(-0.1, 1.1)
         #plt.show(block=False)
         plt.savefig(os.path.join(model_dir, f'unet_test_trace.pdf'))  # Save each figure
 

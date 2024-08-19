@@ -13,7 +13,7 @@ class EncoderBlock(nn.Module):
         # Two convolutional layers with ReLU activation
         self.conv1 = nn.Conv1d(in_channels, out_channels, 3, padding=1)
         self.conv2 = nn.Conv1d(out_channels, out_channels, 3, padding=1)
-        self.relu = nn.ReLU()
+        self.relu = nn.GELU()
         # Max pooling layer
         self.pool = nn.MaxPool1d(kernel_size=pool_size, stride=pool_size, ceil_mode=True)
 

@@ -7,7 +7,7 @@ import time
 import gc
 from numba import njit
 
-
+#%%
 # possible states: empty (0), spin up (1), spin down (-1)
 # possible transitions: tunneling in (up and down), tunneling out (up and down)(, decay (up to down))
 
@@ -399,7 +399,7 @@ def main():
                 del data
                 gc.collect()
                 remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
-                printProgressBar(i+1, n, f'\rSimulating dummy traces... Time remaining: {remaining_time}s', 'complete', length=25)
+                printProgressBar(i+1, n, f'\rSimulating dummy traces... Time remaining: {remaining_time:.2f}s', 'complete', length=25)
                 
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
@@ -425,7 +425,7 @@ def main():
                 gc.collect()
                 remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
                 
-                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time}s', 'complete', length=25)
+                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time:.2f}s', 'complete', length=25)
                 
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
@@ -439,7 +439,8 @@ def main():
          with h5py.File(hdf5_file_path, 'w') as file:
             start_time = time.perf_counter()
             for i in range(n):
-            
+                
+
                 _, mask, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
                 name = f'trace_{i}'
                 if name in file:
@@ -454,7 +455,7 @@ def main():
                 gc.collect()
                 remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
                 
-                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time}s', 'complete', length=25)
+                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time:.2f}s', 'complete', length=25)
                 
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
@@ -477,6 +478,8 @@ def main():
                 end_read = end_read - 1
             print('Length of read trace: ', end_read - start_read)
             for i in range(n):
+                lambda_in , lambda_out = np.exp(np.random.uniform(np.log(1000), np.log(20000), 2))
+                #print(lambda_in, ' ', lambda_out)
                 _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
                 data = data[start_read:end_read]
                 name = f'trace_{i}'
@@ -489,18 +492,18 @@ def main():
                 gc.collect()
                 remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
                 
-                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time}s', 'complete', length=25)
+                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time:.2f}s', 'complete', length=25)
                 
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    # save_read_traces('sim_read_traces_train_10k', 10000)
-    # save_read_traces('sim_read_traces_val', 100)
+    save_read_traces('sim_read_traces_train_10k', 10000)
+    save_read_traces('sim_read_traces_val', 100)
     #save_read_traces('sim_read_traces_test_1k', 1000)
-    save_elzerman_traces('sim_elzerman_traces_train_1k', 1000)
-    save_elzerman_traces('sim_elzerman_traces_val', 100)
-    save_elzerman_traces('sim_elzerman_traces_train_10k', 10000)
+    save_read_traces('sim_elzerman_traces_train_1k', 1000)
+    #save_elzerman_traces('sim_elzerman_traces_val', 100)
+    #save_elzerman_traces('sim_elzerman_traces_train_10k', 10000)
 
     
 
