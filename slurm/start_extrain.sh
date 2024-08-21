@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=8GB
+#SBATCH --mem=16GB
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="Simulate Data"
+#SBATCH --job-name="Train for real data"
 #SBATCH --time=0-01:00:00
 #SBATCH --begin=now
 #SBATCH --signal=TERM@120

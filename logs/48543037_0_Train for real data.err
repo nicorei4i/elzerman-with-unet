@@ -1,0 +1,13 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+/var/spool/slurm/job48543037/slurm_script: line 34: 249303 Killed                  python -u /home/md334167/elzerman-with-unet/train_for_exdata.py
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=48543037.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.

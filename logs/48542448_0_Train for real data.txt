@@ -1,0 +1,4 @@
+GPU available:  True
+GPU available:  True
+cuda
+Error creating traces as array: Unsupported integer size (0)

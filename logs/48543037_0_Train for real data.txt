@@ -1,0 +1,18 @@
+GPU available:  True
+GPU available:  True
+cuda
+sim_read_traces_train_20k
+sim_read_traces_val
+sliced_traces
+sliced_traces_whole
+(20000, 5000)
+(100, 5000)
+(20402, 5000)
+Creating datasets...
+20086
+Start training...
+Epoch [1/50], Train Loss: 0.277269, Validation Loss: 0.209420, lr = 0.001, duration = 6.3613
+Epoch [2/50], Train Loss: 0.208720, Validation Loss: 0.188958, lr = 0.001, duration = 5.5672
+Epoch [3/50], Train Loss: 0.191863, Validation Loss: 0.174057, lr = 0.001, duration = 5.5116
+Epoch [4/50], Train Loss: 0.175036, Validation Loss: 0.167873, lr = 0.001, duration = 5.5406
+Epoch [5/50], Train Loss: 0.163291, Validation Loss: 0.195163, lr = 0.001, duration = 5.5074

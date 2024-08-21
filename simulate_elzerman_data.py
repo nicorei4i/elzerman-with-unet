@@ -382,7 +382,7 @@ def main():
 
     def save_dummy_traces(file_name, n): 
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        trace_dir = os.path.join(current_dir, 'traces')
+        trace_dir = os.path.join(current_dir, 'sim_traces')
         hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
         
         with h5py.File(hdf5_file_path, 'w') as file:
@@ -406,7 +406,7 @@ def main():
 
     def save_elzerman_traces(file_name, n):
          current_dir = os.path.dirname(os.path.abspath(__file__))
-         trace_dir = os.path.join(current_dir, 'traces')
+         trace_dir = os.path.join(current_dir, 'sim_traces')
          os.makedirs(trace_dir, exist_ok=True)  
          hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
 
@@ -432,7 +432,7 @@ def main():
 
     def save_elzerman_traces_and_masks(file_name, hdf5_file_path_masks, n):
          current_dir = os.path.dirname(os.path.abspath(__file__))
-         trace_dir = os.path.join(current_dir, 'traces')
+         trace_dir = os.path.join(current_dir, 'sim_traces')
          hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
 
          mask_file = h5py.File(hdf5_file_path_masks, 'w')
@@ -462,7 +462,7 @@ def main():
 
     def save_read_traces(file_name, n):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        trace_dir = os.path.join(current_dir, 'traces')
+        trace_dir = os.path.join(current_dir, 'sim_traces')
         os.makedirs(trace_dir, exist_ok=True)  
         hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))
 
@@ -474,11 +474,11 @@ def main():
             times_indices = times * n_samples / T
             times_indices = times_indices.astype(np.int64)
             start_read, end_read = times_indices[1], times_indices[2]
-            if (end_read - start_read)%2 == 1:
-                end_read = end_read - 1
+            # if (end_read - start_read)%2 == 1:
+            #     end_read = end_read - 1
             print('Length of read trace: ', end_read - start_read)
             for i in range(n):
-                lambda_in , lambda_out = np.exp(np.random.uniform(np.log(1000), np.log(20000), 2))
+                #lambda_in , lambda_out = np.exp(np.random.uniform(np.log(1000), np.log(20000), 2))
                 #print(lambda_in, ' ', lambda_out)
                 _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
                 data = data[start_read:end_read]
@@ -498,10 +498,12 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_read_traces('sim_read_traces_train_10k', 10000)
-    save_read_traces('sim_read_traces_val', 100)
+    save_read_traces('sim_read_traces_train_10k_pure', 10000)
+    save_read_traces('sim_read_traces_val_pure', 100)
     #save_read_traces('sim_read_traces_test_1k', 1000)
-    save_read_traces('sim_elzerman_traces_train_1k', 1000)
+    save_read_traces('sim_read_traces_train_20k_pure', 20000)
+    
+    #save_read_traces('sim_elzerman_traces_train_1k', 1000)
     #save_elzerman_traces('sim_elzerman_traces_val', 100)
     #save_elzerman_traces('sim_elzerman_traces_train_10k', 10000)
 
@@ -515,7 +517,7 @@ if __name__ == '__main__':
 
 def show_data(file_name):
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    current_dir = os.path.join(current_dir, 'traces')
+    current_dir = os.path.join(current_dir, 'sim_traces')
     hdf5_file_path = os.path.join(current_dir, '{}.hdf5'.format(file_name))
     with h5py.File(hdf5_file_path, 'r') as h5f:
         all_keys = h5f.keys() 
