@@ -1,0 +1,8 @@
+GPU available:  True
+GPU available:  True
+cuda
+Error setting HDF5 data: [Errno 2] Unable to synchronously open file (unable to open file: name = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5', errno = 2, error message = 'No such file or directory', flags = 1, o_flags = 2)
+Error setting HDF5 data: [Errno 2] Unable to synchronously open file (unable to open file: name = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5', errno = 2, error message = 'No such file or directory', flags = 1, o_flags = 2)
+Error getting shape of data: 'NoneType' object is not subscriptable
+Error creating traces as array: 'NoneType' object is not subscriptable
+Error setting HDF5 data: [Errno 2] Unable to synchronously open file (unable to open file: name = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5', errno = 2, error message = 'No such file or directory', flags = 1, o_flags = 2)

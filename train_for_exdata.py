@@ -18,7 +18,7 @@ from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
 from test_lib import get_snr, get_scores_unet, save_scores, plot_unet, get_snr_experimental
-mpl.use('TkAgg')
+#mpl.use('TkAgg')
 mpl.rcParams.update({'figure.max_open_warning': 0})
 
 def main():
@@ -123,9 +123,9 @@ def main():
         val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform)
         test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None)
         
-        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
+        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
         
         return train_loader, val_loader, test_loader
 
@@ -148,7 +148,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 25 
+        num_epochs = 50 
         
         for epoch in range(num_epochs):  
             start_train = time.time()

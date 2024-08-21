@@ -1,0 +1,19 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+Traceback (most recent call last):
+  File "/home/md334167/elzerman-with-unet/train_for_exdata.py", line 21, in <module>
+    mpl.use('TkAgg')
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/__init__.py", line 1249, in use
+    plt.switch_backend(name)
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/pyplot.py", line 350, in switch_backend
+    raise ImportError(
+ImportError: Cannot load backend 'TkAgg' which requires the 'tk' interactive framework, as 'headless' is currently running

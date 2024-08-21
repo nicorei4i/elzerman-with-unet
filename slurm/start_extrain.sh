@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8GB
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="Train for real data"
+#SBATCH --job-name="Simulate Data"
 #SBATCH --time=0-01:00:00
 #SBATCH --begin=now
 #SBATCH --signal=TERM@120
@@ -31,4 +31,4 @@ unset __conda_setup
 conda activate DL
 
 # run the training
-python -u /home/md334167/elzerman-with-unet/simulate_elzerman_data.py
+python -u /home/md334167/elzerman-with-unet/train_for_exdata.py
