@@ -18,7 +18,7 @@ from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
 from test_lib import get_snr, get_scores_unet, save_scores, plot_unet, get_snr_experimental
-#mpl.use('TkAgg')
+mpl.use('TkAgg')
 mpl.rcParams.update({'figure.max_open_warning': 0})
 
 def main():
@@ -34,16 +34,17 @@ def main():
     # Set up directory paths
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    trace_dir = os.path.join(current_dir, 'traces')
+    trace_dir = os.path.join(current_dir, 'sim_traces')
+    real_data_dir = os.path.join(current_dir, 'real_data')
     file_name = 'sim_read_traces_train_10k'  
     val_name = 'sim_read_traces_val'  
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
     test_trace_name = 'test_trace'
     test_trace_name = "494_2_3T_elzermann_testtrace_at_b'repitition'_771.000_b'Pulse_for_Qdac - Tburst'_554.500"
-    
+    noise_name = '545_1.9T_pg13_vs_tc'
 
-    noise_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5'
+    noise_path = os.path.join(real_data_dir, '{}.hdf5'.format(noise_name))
     hdf5Data_noise = HDF5Data(wdir=trace_dir)
     hdf5Data_noise.set_path(noise_path)
 
@@ -62,9 +63,9 @@ def main():
     # Construct full paths for the HDF5 files
     hdf5_file_path = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
     hdf5_file_path_val = os.path.join(trace_dir, '{}.hdf5'.format(val_name))  
-    hdf5_file_path_test = os.path.join(trace_dir, '{}.hdf5'.format(test_name))  
-    hdf5_file_path_whole = os.path.join(trace_dir, '{}.hdf5'.format(test_whole_name))  
-    test_trace_path = os.path.join(trace_dir, '{}.npy'.format(test_trace_name))  
+    hdf5_file_path_test = os.path.join(real_data_dir, '{}.hdf5'.format(test_name))  
+    #hdf5_file_path_whole = os.path.join(trace_dir, '{}.hdf5'.format(test_whole_name))  
+    test_trace_path = os.path.join(real_data_dir, '{}.npy'.format(test_trace_name))  
 
     test_trace = np.load(test_trace_path)
     test_trace = test_trace[:15000]
@@ -123,9 +124,9 @@ def main():
         val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform)
         test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None)
         
-        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True, pin_memory=True)
+        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         
         return train_loader, val_loader, test_loader
 
@@ -148,7 +149,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 50 
+        num_epochs = 25 
         
         for epoch in range(num_epochs):  
             start_train = time.time()
