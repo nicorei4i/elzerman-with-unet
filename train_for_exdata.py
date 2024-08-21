@@ -41,8 +41,11 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
     real_data_dir = os.path.join(current_dir, 'real_data')
-    file_name = 'sim_read_traces_train_20k_pure'  
-    val_name = 'sim_read_traces_val_pure'  
+    # file_name = 'sim_read_traces_train_20k_pure'  
+    # val_name = 'sim_read_traces_val_pure'  
+    file_name = 'sim_read_traces_train_1k'  
+    val_name = 'sim_read_traces_val'  
+    
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
     #test_trace_name = 'test_trace'
@@ -55,10 +58,15 @@ def main():
 
     hdf5Data_noise.set_filename()
     hdf5Data_noise.set_traces()
+    hdf5Data_noise.set_measure_data_and_axis()
+    
+    tc = np.array(hdf5Data_noise.measure_axis[1]).T
+
 
     hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
-    noise_traces = hdf5Data_noise.traces #self.data.traces
-    
+    noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
+    mask = np.logical_and(8e-6<tc, tc<12e-6)
+    noise_traces = noise_traces[mask]
     print(file_name)
     print(val_name)
     print(test_name)

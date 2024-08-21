@@ -82,8 +82,10 @@ class MeasuredNoise(object):
         amp = np.random.choice(self.amps, p=self.amps_dist)
         #print(amp)
         i_noise = np.random.randint(self.noise_traces.shape[0])
-        j_noise = np.random.randint(self.noise_traces.shape[1])
-        noise_trace = self.noise_traces[i_noise, j_noise]
+        #j_noise = np.random.randint(self.noise_traces.shape[1])
+        #noise_trace = self.noise_traces[i_noise, j_noise]
+        noise_trace = self.noise_traces[i_noise]
+
 
         start = np.random.randint(0, len(noise_trace)-len(trace))
         stop = start + len(trace)
