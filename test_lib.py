@@ -211,6 +211,30 @@ def get_snr(loader):
 
     return snr
 
+
+def get_snr_experimental(clean_trace, noisy_trace, scaler):
+    clean_trace = scaler(clean_trace)
+    clean_trace = clean_trace.reshape(-1)
+    # fig, ax = plt.subplots(1, 1)
+    # ax.plot(clean_trace)
+    # ax.plot(noisy_trace)
+    # plt.show(block=True)
+
+    signals = clean_trace
+    noise = noisy_trace-clean_trace
+
+    signal = np.max(clean_trace) - np.min(clean_trace)
+    signal = signal**2
+    noise_powers = np.mean(noise**2)
+
+
+    snr = np.mean(signal/noise_powers)
+
+    snr = 10* np.log10(snr)
+
+    return snr
+
+
 def invert(arr):
     where_0 = np.where(arr == 0)
     where_1 = np.where(arr == 1)

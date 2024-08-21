@@ -4,7 +4,7 @@ import numpy as np
 import os
 import h5py
 import matplotlib.pyplot as plt
-import matplotlib
+import matplotlib as mpl
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -17,8 +17,9 @@ from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise
 from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
-from test_lib import get_snr, get_scores_unet, save_scores, plot_unet
-matplotlib.use('TkAgg')
+from test_lib import get_snr, get_scores_unet, save_scores, plot_unet, get_snr_experimental
+mpl.use('TkAgg')
+mpl.rcParams.update({'figure.max_open_warning': 0})
 
 def main():
     # Check if GPU is available
@@ -26,7 +27,6 @@ def main():
 
     # Set device to GPU if available, else CPUsq
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
 
     #device='cpu'
     print(device)
@@ -40,7 +40,7 @@ def main():
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
     test_trace_name = 'test_trace'
-
+    test_trace_name = "494_2_3T_elzermann_testtrace_at_b'repitition'_771.000_b'Pulse_for_Qdac - Tburst'_554.500"
     
 
     noise_path = '//serveri2a/Transfer/Nico/01.Data/Elzerman/545_1.9T_pg13_vs_tc.hdf5'
@@ -67,6 +67,8 @@ def main():
     test_trace_path = os.path.join(trace_dir, '{}.npy'.format(test_trace_name))  
 
     test_trace = np.load(test_trace_path)
+    test_trace = test_trace[:15000]
+    test_trace = test_trace[-5000:]
 
     # Read data from the training HDF5 file
     with h5py.File(hdf5_file_path, 'r') as file:  
@@ -96,16 +98,13 @@ def main():
 
     train_scaler = MinMaxScalerTransform()
     test_scaler = MinMaxScalerTransform()
-
+    noise_transform = MeasuredNoise(noise_traces=noise_traces)
     def get_loaders(amps, amps_dist):
     # Define parameters for interference signals
         # Create instances of Noise and MinMaxScalerTransform classes
-        noise_transform = MeasuredNoise(noise_traces=noise_traces, amps=amps, amps_dist=amps_dist)
-        #noise_transform = 
-        
-
-
-
+        #noise_transform.set_noise_traces(noise_traces)
+        noise_transform.set_amps(amps) 
+        noise_transform.set_amps_dist(amps_dist)
         # Fit scalers using data from the HDF5 files
         dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform)  
         train_loader = DataLoader(dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
@@ -143,13 +142,13 @@ def main():
         model = UNet().to(device)  
         print(sum(p.numel() for p in model.parameters() if p.requires_grad))
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01) 
-        scheduler = lr_scheduler.LinearLR(optimizer, start_factor=1, end_factor=0.1, total_iters=25)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001) 
+        # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10, 35], gamma=0.1)
         print('Start training...')
         train_losses = []
         val_losses = []
 
-        num_epochs = 25
+        num_epochs = 25 
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -173,7 +172,7 @@ def main():
             train_loss /= len(train_loader.dataset)
             train_losses.append(train_loss)
             lr = optimizer.param_groups[0]["lr"]
-            scheduler.step()
+            # scheduler.step()
 
             model.eval()
             val_loss = 0.0
@@ -213,7 +212,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(2, 3, 100)
+    amps = np.linspace(1.5, 2.5, 100)
     x = np.linspace(-1, 1, len(amps))
     amps_dist = np.exp(0.5*(-((x)/0.5)**2))
     amps_dist /= np.sum(amps_dist)
@@ -224,6 +223,7 @@ def main():
     train_loader, val_loader, test_loader = get_loaders(amps, amps_dist)
     model = train_model(train_loader, val_loader)
     model.eval()
+    
     with torch.no_grad():
         model_dir = os.path.join(current_dir, 'unet_params_ex')
         x, y = next(iter(val_loader))  # Get a batch of validation data
@@ -238,16 +238,21 @@ def main():
         
         x = x.cpu().numpy()
         y = y.cpu().numpy()
-
+        temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform)  
+        temp_loader = DataLoader(temp_dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
+        snr = get_snr(temp_loader)
         for i in range(32):
             fig, axs = plt.subplots(4, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-            fig.suptitle('Validation Traces')
+            fig.suptitle(f'Validation Traces (snr = {snr:.2f}dB)')
             axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
             axs[1].tick_params(labelbottom=False)
             axs[2].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
+            axs[2].set_ylim(-0.1, 1.1)
             axs[2].tick_params(labelbottom=False)
             axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+            axs[3].set_ylim(-0.1, 1.1)
             axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+            axs[0].set_ylim(-0.1, 1.1)
             axs[0].tick_params(labelbottom=False)
             for ax in axs:
                 ax.legend()
@@ -272,7 +277,10 @@ def main():
             axs[0].tick_params(labelbottom=False)
             axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
             axs[1].tick_params(labelbottom=False)
+            axs[1].set_ylim(-0.1, 1.1)
             axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+            axs[2].set_ylim(-0.1, 1.1)
+            
             for ax in axs:
                 ax.legend()
                 #ax.set_ylim(-0.1, 1.1)

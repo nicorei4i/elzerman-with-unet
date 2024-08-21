@@ -3,7 +3,7 @@ import numpy as np
 import random
 import torch
 from torch.utils.data import Dataset
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 
 
 class SimDataset(Dataset):
@@ -71,10 +71,11 @@ class SimDataset(Dataset):
         return torch.tensor(noisy_trace, dtype=torch.float32), torch.tensor(clean_trace, dtype=torch.float32) # Convert the numpy array to a PyTorch tensor and return it
 
 class MeasuredNoise(object):
-    def __init__(self, noise_traces, amps, amps_dist=None):
+    def __init__(self, noise_traces, amps=np.ones(2), amps_dist=None):
         self.amps = amps 
         self.amps_dist = amps_dist
         self.noise_traces = noise_traces
+        self.snr_list = []
 
     def __call__(self, trace, noise_scaling=None):
         
@@ -92,10 +93,26 @@ class MeasuredNoise(object):
         noise -= np.mean(noise)
         noise /= np.max(np.abs(noise))
         noisy_trace = trace + amp*noise
+
+        signal = 1
+        noise = np.mean((noise*amp)**2)
+        snr = 10*np.log10(signal/noise)
+        self.snr_list.append(snr)
+
         return noisy_trace
 
+    def get_snr_list(self):
+        return self.snr_list
+    
+    def set_noise_traces(self, noise_traces):
+        self.noise_traces = noise_traces
+    
+    def set_amps(self, amps):
+        self.amps = amps
 
-
+    def set_amps_dist(self, amps_dist):
+        self.amps_dist = amps_dist
+ 
 class Noise(object):
     def __init__(self, shape, sim_t, sigma, amps, freqs, weights_sigma=None, weights_amps=None):
         """
@@ -215,6 +232,7 @@ class MinMaxScalerTransform:
         """
         #self.scaler = MinMaxScaler(feature_range=feature_range)
         self.scaler = StandardScaler()
+        #self.scaler = RobustScaler()
         
     def fit_data(self, data):
         """
