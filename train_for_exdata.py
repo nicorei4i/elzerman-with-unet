@@ -41,10 +41,10 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
     real_data_dir = os.path.join(current_dir, 'real_data')
-    # file_name = 'sim_read_traces_train_20k_pure'  
-    # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_1k'  
-    val_name = 'sim_read_traces_val'  
+    file_name = 'sim_read_traces_train_20k_pure'  
+    val_name = 'sim_read_traces_val_pure'  
+    # file_name = 'sim_read_traces_train_1k'  
+    # val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
@@ -162,7 +162,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 50 
+        num_epochs = 25 
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -226,7 +226,8 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(3, 5, 100)
+    amps = np.linspace(2, 3, 100)
+    print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
     amps_dist = np.exp(0.5*(-((x)/0.5)**2))
     amps_dist /= np.sum(amps_dist)
