@@ -498,10 +498,10 @@ def main():
             print('...took {}s\n'.format((end_time - start_time)))
 
 
-    save_read_traces('sim_read_traces_train_10k_pure', 10000)
-    save_read_traces('sim_read_traces_val_pure', 100)
+    #save_read_traces('sim_read_traces_train_10k_pure', 10000)
+    save_read_traces('sim_read_traces_val_mixed', 100)
     #save_read_traces('sim_read_traces_test_1k', 1000)
-    save_read_traces('sim_read_traces_train_20k_pure', 20000)
+    #save_read_traces('sim_read_traces_train_20k_pure', 20000)
     
     #save_read_traces('sim_elzerman_traces_train_1k', 1000)
     #save_elzerman_traces('sim_elzerman_traces_val', 100)

@@ -4,13 +4,16 @@ import random
 import torch
 from torch.utils.data import Dataset
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
-
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from scipy.optimize import curve_fit
+mpl.use('Agg')
 
 class SimDataset(Dataset):
     """
     A custom dataset class for loading simulation data stored in an HDF5 file.
     """
-    def __init__(self, file_path, scale_transform=None, noise_transform=None):
+    def __init__(self, file_path, scale_transform=None, noise_transform=None, subtract_linear_background=False):
         """
         Initialize the dataset with the path to the HDF5 file and an optional transform.
 
@@ -27,7 +30,7 @@ class SimDataset(Dataset):
         self.keys = list(file.keys())  # Get the list of keys (datasets) in the file
         random.shuffle(self.keys)  # Shuffle the keys to randomize the order of access
         self.traces = {key: np.array(file[key], dtype=np.float32) for key in self.keys}
-
+        self.subtract_linear_background = subtract_linear_background
         file.close()  # Close the HDF5 file
 
     def __len__(self):
@@ -38,6 +41,8 @@ class SimDataset(Dataset):
         int: Number of samples.
         """
         return len(self.keys)
+
+    
 
     def __getitem__(self, index):
         """
@@ -55,11 +60,17 @@ class SimDataset(Dataset):
         # file.close()  # Close the HDF5 file
         clean_trace = self.traces[self.keys[index]]
 
+        
+        
         if self.noise_transform:
             noisy_trace = self.noise_transform(clean_trace)
         else:
             noisy_trace = clean_trace.copy()
             #print('No noise transform! Data will be labeled to itself!')
+
+        if self.subtract_linear_background:
+            noisy_trace = subtract_lb(noisy_trace)
+
 
         if self.scale_transform:  # Apply the scale transform if it exists
             #clean_trace = self.scale_transform(clean_trace)
@@ -69,6 +80,18 @@ class SimDataset(Dataset):
             noisy_trace = noisy_trace.reshape(1, -1)
             #print(np.shape(noisy_trace))
         return torch.tensor(noisy_trace, dtype=torch.float32), torch.tensor(clean_trace, dtype=torch.float32) # Convert the numpy array to a PyTorch tensor and return it
+
+def subtract_lb(noisy_trace):
+    def linear_function(t, a, b):
+        return a * t + b
+
+
+    time = np.arange(0, len(noisy_trace), 1)
+    params, _ = curve_fit(linear_function, time, noisy_trace)
+    lbg = linear_function(time, *params)
+    noisy_trace = noisy_trace - lbg
+    return noisy_trace
+
 
 class MeasuredNoise(object):
     def __init__(self, noise_traces, amps=np.ones(2), amps_dist=None):
@@ -84,18 +107,15 @@ class MeasuredNoise(object):
         i_noise = np.random.randint(self.noise_traces.shape[0])
         #j_noise = np.random.randint(self.noise_traces.shape[1])
         #noise_trace = self.noise_traces[i_noise, j_noise]
-        noise_trace = self.noise_traces[i_noise]
-
+        noise_trace = self.noise_traces[i_noise].copy()
 
         start = np.random.randint(0, len(noise_trace)-len(trace))
         stop = start + len(trace)
 
-
-        noise = noise_trace[start:stop]
+        noise = noise_trace[start:stop].copy()
         noise -= np.mean(noise)
         noise /= np.max(np.abs(noise))
         noisy_trace = trace + amp*noise
-
         signal = 1
         noise = np.mean((noise*amp)**2)
         snr = 10*np.log10(signal/noise)
@@ -233,8 +253,8 @@ class MinMaxScalerTransform:
         feature_range (tuple): Desired range of transformed data.
         """
         #self.scaler = MinMaxScaler(feature_range=feature_range)
-        self.scaler = StandardScaler()
-        #self.scaler = RobustScaler()
+        #self.scaler = StandardScaler()
+        self.scaler = RobustScaler()
         
     def fit_data(self, data):
         """

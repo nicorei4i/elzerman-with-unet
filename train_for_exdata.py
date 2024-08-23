@@ -13,7 +13,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 from unet_model import UNet
 from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
-from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise
+from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise, subtract_lb
 from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
@@ -24,13 +24,13 @@ def main():
     # Check if GPU is available
     print('GPU available: ', torch.cuda.is_available())
 
-    # Set device to GPU if available, else CPUsq
+    # Set device to GPU if available, else CPUs
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if device == torch.device('cuda'):
         num_workers = 4
     else: 
         num_workers = 1
-        mpl.use('TkAgg')
+        #mpl.use('Qt5Agg')
 
 
     #device='cpu'
@@ -41,10 +41,10 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
     real_data_dir = os.path.join(current_dir, 'real_data')
-    file_name = 'sim_read_traces_train_20k_pure'  
-    val_name = 'sim_read_traces_val_pure'  
-    # file_name = 'sim_read_traces_train_1k'  
-    # val_name = 'sim_read_traces_val'  
+    # file_name = 'sim_read_traces_train_20k_pure'  
+    # val_name = 'sim_read_traces_val_pure'  
+    file_name = 'sim_read_traces_train_10k'  
+    val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     test_whole_name = 'sliced_traces_whole' 
@@ -81,7 +81,7 @@ def main():
     test_trace_path = os.path.join(real_data_dir, '{}.npy'.format(test_trace_name))  
 
     test_trace = np.load(test_trace_path)
-    test_trace = test_trace[:15000]
+    test_trace = test_trace[:len(test_trace)//2]
     test_trace = test_trace[-5000:]
 
     # Read data from the training HDF5 file
@@ -126,8 +126,11 @@ def main():
         noisy_data = noisy_data[0, :, 0, :]
         train_scaler.fit_data(noisy_data)
 
-
-        test_scaler.fit_from_hdf5(hdf5_file_path_test)
+        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=None, noise_transform=None, subtract_linear_background=True)  
+        test_loader = DataLoader(test_dataset, batch_size=test_data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
+        corr_data = np.array([batch_x.cpu().numpy() for batch_x, batch_y in test_loader])    
+        corr_data = corr_data[0, :, 0, :]
+        test_scaler.fit_data(corr_data)
         
 
         batch_size = 32
@@ -135,7 +138,7 @@ def main():
         print('Creating datasets...')
         dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform)  
         val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform)
-        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None)
+        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None, subtract_linear_background=True)
         
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
@@ -156,8 +159,8 @@ def main():
         model = UNet().to(device)  
         print(sum(p.numel() for p in model.parameters() if p.requires_grad))
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001) 
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[50], gamma=0.1)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01) 
+        #scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[20], gamma=0.1)
         print('Start training...')
         train_losses = []
         val_losses = []
@@ -186,7 +189,7 @@ def main():
             train_loss /= len(train_loader.dataset)
             train_losses.append(train_loss)
             lr = optimizer.param_groups[0]["lr"]
-            # scheduler.step()
+            #scheduler.step()
 
             model.eval()
             val_loss = 0.0
@@ -226,7 +229,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(2, 3, 100)
+    amps = np.linspace(2.0, 2.5, 100)
     print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
     amps_dist = np.exp(0.5*(-((x)/0.5)**2))
@@ -238,7 +241,9 @@ def main():
     train_loader, val_loader, test_loader = get_loaders(amps, amps_dist)
     model = train_model(train_loader, val_loader)
     model.eval()
-    
+    score = get_scores_unet(model, val_loader)
+    print('score: ', score)
+
     with torch.no_grad():
         model_dir = os.path.join(current_dir, 'unet_params_ex')
         x, y = next(iter(val_loader))  # Get a batch of validation data
@@ -302,6 +307,7 @@ def main():
             #plt.show(block=False)
             plt.savefig(os.path.join(model_dir, f'unet_test_{i}.pdf'))  # Save each figure
 
+        test_trace = subtract_lb(test_trace)
         x = torch.tensor(test_scaler(test_trace).reshape(1,1,-1), dtype=torch.float32).to(device)
         decoded_test_data = model(x)
         m = torch.nn.Softmax(dim=1)

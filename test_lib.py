@@ -253,7 +253,7 @@ def get_scores_unet(model, test_loader):
             decoded_test_data = model(batch_x)
             decoded_test_data = decoded_test_data.cpu()
             batch_y = batch_y.numpy()
-            batch_y = batch_y.squeeze(1)
+            #batch_y = batch_y.squeeze(1)
             m = torch.nn.Softmax(dim=1)
             decoded_test_data = m(decoded_test_data)
             decoded_test_data = decoded_test_data.cpu().numpy()
