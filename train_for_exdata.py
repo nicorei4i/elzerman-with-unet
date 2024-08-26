@@ -43,7 +43,7 @@ def main():
     real_data_dir = os.path.join(current_dir, 'real_data')
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_10k'  
+    file_name = 'sim_read_traces_train_mixed_2k_5k_20k'  
     val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
@@ -67,6 +67,10 @@ def main():
     noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
     mask = np.logical_and(8e-6<tc, tc<12e-6)
     noise_traces = noise_traces[mask]
+    print(f'Noise traces shape:{noise_traces.shape}')
+
+    train_noise_traces, val_noise_traces = noise_traces[:-5, ::], noise_traces[-5:, ::]
+
     print(file_name)
     print(val_name)
     print(test_name)
@@ -88,19 +92,19 @@ def main():
     with h5py.File(hdf5_file_path, 'r') as file:  
         all_keys = file.keys()  
         data = np.array([file[key] for key in all_keys],dtype=np.float32)  
-        print(data.shape)  
-
+        print(f'Training traces shape:{data.shape}')
+    
     # Read data from the validation HDF5 file
     with h5py.File(hdf5_file_path_val, 'r') as file:  
         all_keys = file.keys()  
         val_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
-        print(val_data.shape)  
-
+        print(f'Validation traces shape:{val_data.shape}')
+    
     with h5py.File(hdf5_file_path_test, 'r') as file:  
             all_keys = file.keys()  
             test_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
-            print(test_data.shape)  
-
+            print(f'Test traces shape:{test_data.shape}')
+    
     # with h5py.File(hdf5_file_path_whole, 'r') as file:  
     #         all_keys = file.keys()  
     #         whole_data = np.array([file[key] for key in all_keys], dtype=np.float32)  
@@ -112,15 +116,21 @@ def main():
 
     train_scaler = MinMaxScalerTransform()
     test_scaler = MinMaxScalerTransform()
-    noise_transform = MeasuredNoise(noise_traces=noise_traces)
+    noise_transform_train = MeasuredNoise(noise_traces=train_noise_traces)
+    noise_transform_val = MeasuredNoise(noise_traces=val_noise_traces)
+    
+
     def get_loaders(amps, amps_dist):
     # Define parameters for interference signals
         # Create instances of Noise and MinMaxScalerTransform classes
         #noise_transform.set_noise_traces(noise_traces)
-        noise_transform.set_amps(amps) 
-        noise_transform.set_amps_dist(amps_dist)
+        noise_transform_train.set_amps(amps) 
+        noise_transform_train.set_amps_dist(amps_dist)
+        noise_transform_val.set_amps(amps) 
+        noise_transform_val.set_amps_dist(amps_dist)
+
         # Fit scalers using data from the HDF5 files
-        dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform)  
+        dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train)  
         train_loader = DataLoader(dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         noisy_data = np.array([batch_x.cpu().numpy() for batch_x, batch_y in train_loader])    
         noisy_data = noisy_data[0, :, 0, :]
@@ -136,8 +146,8 @@ def main():
         batch_size = 32
         # Create instances of SimDataset class for training and validation datasets
         print('Creating datasets...')
-        dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform)  
-        val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform)
+        dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform_train)  
+        val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform_val)
         test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None, subtract_linear_background=True)
         
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
@@ -159,7 +169,7 @@ def main():
         model = UNet().to(device)  
         print(sum(p.numel() for p in model.parameters() if p.requires_grad))
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01) 
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001) 
         #scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[20], gamma=0.1)
         print('Start training...')
         train_losses = []
@@ -229,7 +239,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(2.0, 2.5, 100)
+    amps = np.linspace(2.0, 3.0, 10000)
     print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
     amps_dist = np.exp(0.5*(-((x)/0.5)**2))
@@ -258,12 +268,12 @@ def main():
         
         x = x.cpu().numpy()
         y = y.cpu().numpy()
-        temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform)  
+        temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train)  
         temp_loader = DataLoader(temp_dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         snr = get_snr(temp_loader)
         for i in range(32):
             fig, axs = plt.subplots(4, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-            fig.suptitle(f'Validation Traces (snr = {snr:.2f}dB)')
+            fig.suptitle(f'Validation Trace (snr = {snr:.2f}dB)')
             axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
             axs[1].tick_params(labelbottom=False)
             axs[2].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
@@ -292,7 +302,7 @@ def main():
         
         for i in range(32):
             fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-            fig.suptitle('Validation Traces')
+            fig.suptitle('Test Trace')
             axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
             axs[0].tick_params(labelbottom=False)
             axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
@@ -318,7 +328,7 @@ def main():
         
 
         fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-        fig.suptitle('Validation Traces')
+        fig.suptitle('Test Trace')
         axs[0].plot(x.reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
         axs[0].tick_params(labelbottom=False)
         axs[1].plot(prediction_class[0], label='Denoised', color='mediumblue', linewidth=0.9)
