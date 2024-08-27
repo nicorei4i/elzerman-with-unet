@@ -43,12 +43,12 @@ def main():
     real_data_dir = os.path.join(current_dir, 'real_data')
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_mixed_2k_5k_20k'  
-    val_name = 'sim_read_traces_val'  
+    file_name = 'sim_read_traces_train_50k'  
+    val_name = 'sim_read_traces_train_10k'  
     
     test_name = 'sliced_traces' 
-    test_whole_name = 'sliced_traces_whole' 
-    #test_trace_name = 'test_trace'
+    # test_whole_name = 'sliced_traces_whole' 
+    # test_trace_name = 'test_trace'
     test_trace_name = "494_2_3T_elzermann_testtrace_at_b'repitition'_771.000_b'Pulse_for_Qdac - Tburst'_554.500"
     noise_name = '545_1.9T_pg13_vs_tc'
 
@@ -65,7 +65,7 @@ def main():
 
     hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
     noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
-    mask = np.logical_and(8e-6<tc, tc<12e-6)
+    mask = np.logical_and(8e-6<tc, tc<16e-6)
     noise_traces = noise_traces[mask]
     print(f'Noise traces shape:{noise_traces.shape}')
 
@@ -74,7 +74,7 @@ def main():
     print(file_name)
     print(val_name)
     print(test_name)
-    print(test_whole_name)
+    #print(test_whole_name)
     
 
     # Construct full paths for the HDF5 files
@@ -239,10 +239,11 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(2.0, 3.0, 10000)
+    amps = np.linspace(2.5, 4, 10000)
     print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
-    amps_dist = np.exp(0.5*(-((x)/0.5)**2))
+    # amps_dist = np.exp(0.5*(-((x)/0.5)**2))
+    amps_dist = np.ones(len(amps))
     amps_dist /= np.sum(amps_dist)
     # fig, ax = plt.subplots()
     # ax.plot(amps, amps_dist)
@@ -271,7 +272,7 @@ def main():
         temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train)  
         temp_loader = DataLoader(temp_dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         snr = get_snr(temp_loader)
-        for i in range(32):
+        for i in range(5):
             fig, axs = plt.subplots(4, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
             fig.suptitle(f'Validation Trace (snr = {snr:.2f}dB)')
             axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
@@ -291,7 +292,11 @@ def main():
             plt.savefig(os.path.join(model_dir, f'unet_val_{i}.pdf'))  # Save each figure
         print('Figures saved')
 
-        x, y = next(iter(test_loader))  # Get a batch of validation data
+        x1, y1 = next(iter(test_loader))  # Get a batch of validation data
+        x2, y2 = next(iter(test_loader))  # Get a batch of validation data
+        x = torch.cat((x1, x2), dim=0)
+
+
         x = x.to(device)
         decoded_test_data = model(x)
         m = torch.nn.Softmax(dim=1)
