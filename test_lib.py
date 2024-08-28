@@ -17,8 +17,7 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 import pickle
 from pathlib import Path
-
-
+import time_resolved_CD_lib_08 as lib
 print('GPU available: ', torch.cuda.is_available())
 
 # Set device to GPU if available, otherwise use CPU
@@ -300,19 +299,96 @@ def get_scores_aenc(model, test_loader):
 def get_denoised_schmitt(model, loader):
 
     with torch.no_grad():  # Disable gradient calculation for validation
-            for batch_x, batch_y in loader:  # Loop over each batch of validation data
-                batch_x = batch_x.to(device)
-                decoded_test_data = model(batch_x)
-                decoded_test_data = decoded_test_data.cpu()
-                batch_y = batch_y.numpy()
-                #batch_y = batch_y.squeeze(1)
-                m = torch.nn.Softmax(dim=1)
-                decoded_test_data = m(decoded_test_data)
-                decoded_test_data = decoded_test_data.cpu().numpy()
-                #prob_1 = decoded_test_data[:, 1, :]
-                prediction_class = decoded_test_data.argmax(axis=1)
-                #prediction_class = decoded_test_data.numpy().squeeze(1)    
+        all_p1s = np.array([])
+        for batch_x, batch_y in loader:  # Loop over each batch of validation data
+            batch_x = batch_x.to(device)
+            decoded_test_data = model(batch_x)
+            decoded_test_data = decoded_test_data.cpu()
+            batch_y = batch_y.numpy()
+            #batch_y = batch_y.squeeze(1)
+            m = torch.nn.Softmax(dim=1)
+            decoded_test_data = m(decoded_test_data)
+            decoded_test_data = decoded_test_data.cpu().numpy()
+            p1 = decoded_test_data[:, 1, :]
+            all_p1s = np.append(all_p1s, p1)
+    rect_p1s, thresh_lower, thresh_upper = schmitt_trigger(all_p1s, full_output=True)
+    return rect_p1s, thresh_lower, thresh_upper
+
+
+
+
+def schmitt_trigger(new_traces_array, full_output=False):
+    m = 3/7
+    b = -6/7
+    n_bins = 150
+
+    start_params = [1e2, 0.95, 0.01, 1e4, 0, 0.01, 3] # start parameters for Gaussian fit, must be determined manually 
+    bounds_double_gaussian = ([0,0.8,0,-0.2,-1,0,0],[1e7,1.2, 1,1e7,0.2,1,100])
     
+    # start_params = None
+    # bounds_double_gaussian = (np.full(7, -np.inf), np.full(7, np.inf))
+
+    trace = np.array(new_traces_array).flatten()
+
+    hist, bins = np.histogram(trace, bins = n_bins, density = False)
+    bin_centers = 0.5*(bins[1:] + bins[:-1])
+
+    hist_smoothed = lib.moving_average(hist, 5) # smooth histogram data, might have to be adjusted depending on nb of bins
+
+
+
+    
+
+
+    '''
+    Fit double Gaussian to histogram using start parameters and determine threshold parameter a
+    '''
+
+    params, cov = lib.fit_double_gaussian(bin_centers, hist_smoothed, start_params, bounds_double_gaussian)
+    print(params)
+    
+    fig, ax = plt.subplots(1, 1)
+    ax.scatter(bin_centers,hist_smoothed, s=0.5)
+
+    ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params))
+    a1, m1, s1, a2, m2, s2, offset = start_params
+    ax.plot(bin_centers, lib.double_gaussian(bin_centers, a1, m1, s1, a2, m2, s2, offset), color='red')
+    
+    ax.plot(bin_centers, lib.gaussian(bin_centers, *params[0:3]))
+    ax.plot(bin_centers, lib.gaussian(bin_centers, *params[3:6]))
+    
+    ax.set_yscale('log')
+    ax.set_ylim(0.1, np.max(hist_smoothed))
+
+    snr = lib.snr_calc(params)
+    a = lib.det_a(snr, m, b)
+
+    # print(snr)
+    # print(a)
+    # ax.set_xlim(min(bin_centers),max(bin_centers))
+    # ax.xlabel("Detector signal (mV)")
+    # ax.ylabel(r"Counts $(10^5)$")
+    # ax.title("SNR = {}".format(round(snr,2)))
+    plt.savefig('a.pdf')
+    #plt.show(block=True)
+    '''
+    Detection algorithm. 
+    In case of corrected frequencies, traces_array needs to be corrected first.
+    '''
+    thresh_lower = params[1]+a*params[2]
+    thresh_upper = params[4]-a*params[5]
+
+    time_list = np.arange(0, new_traces_array.shape[-1])
+    rect_traces = np.array([lib.detect_events_vec(time_list, trace, thresh_upper, thresh_lower)[-1] for trace in new_traces_array])
+
+    if full_output:
+        return rect_traces, thresh_lower, thresh_upper
+    else: 
+        return rect_traces
+
+
+    
+
 
 
 

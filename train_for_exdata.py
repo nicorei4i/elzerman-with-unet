@@ -1,5 +1,7 @@
 # Import necessary libraries
-#%%
+#%% 
+
+
 import numpy as np
 import os
 import h5py
@@ -18,8 +20,9 @@ from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
 import pickle
-from test_lib import get_snr, get_scores_unet, save_scores, plot_unet, get_snr_experimental
+from test_lib import get_snr, get_scores_unet, schmitt_trigger
 mpl.rcParams.update({'figure.max_open_warning': 0})
+plt.ion()
 
 def main():
     # Check if GPU is available
@@ -44,7 +47,7 @@ def main():
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
     file_name = 'sim_read_traces_train_10k'  
-    val_name = 'sim_read_traces_train_10k'  
+    val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     # test_whole_name = 'sliced_traces_whole' 
@@ -175,7 +178,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 25 
+        num_epochs = 10 
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -239,7 +242,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(2.5, 4, 10000)
+    amps = np.linspace(1, 1, 10000)
     print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
     # amps_dist = np.exp(0.5*(-((x)/0.5)**2))
@@ -273,8 +276,10 @@ def main():
         m = torch.nn.Softmax(dim=1)
         decoded_test_data = m(decoded_test_data)
         decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
-        prediction_class = decoded_test_data.argmax(axis=1)
-        
+        #prediction_class = decoded_test_data.argmax(axis=1)
+        np.save('newarray.npy', decoded_test_data[:, 1, :])
+        prediction_class, thresh_lower, thresh_upper = schmitt_trigger(decoded_test_data[:, 1, :], full_output=True)
+
         x = x.cpu().numpy()
         y = y.cpu().numpy()
         temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train)  
@@ -289,7 +294,9 @@ def main():
             axs[2].set_ylim(-0.1, 1.1)
             axs[2].tick_params(labelbottom=False)
             axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
-            axs[3].set_ylim(-0.1, 1.1)
+            axs[3].axhline(thresh_lower, color='red')
+            axs[3].axhline(thresh_upper, color='red')
+            #axs[3].set_ylim(-0.1, 1.1)
             axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
             axs[0].set_ylim(-0.1, 1.1)
             axs[0].tick_params(labelbottom=False)

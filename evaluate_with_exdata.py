@@ -1,8 +1,23 @@
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle 
 import os
 from torch.utils.data import DataLoader
+from test_lib import schmitt_trigger
+
+
+new_array = np.load('newarray.npy')
+prediction_class, thresh_lower, thresh_upper = schmitt_trigger(new_traces_array=new_array, full_output=True)
+
+print(thresh_lower)
+print(thresh_upper)
+
+
+
+
+
+#%%
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
