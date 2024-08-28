@@ -17,6 +17,7 @@ from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise, sub
 from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
+import pickle
 from test_lib import get_snr, get_scores_unet, save_scores, plot_unet, get_snr_experimental
 mpl.rcParams.update({'figure.max_open_warning': 0})
 
@@ -37,13 +38,12 @@ def main():
     print(device)
 
     # Set up directory paths
-    current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
     real_data_dir = os.path.join(current_dir, 'real_data')
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_50k'  
+    file_name = 'sim_read_traces_train_10k'  
     val_name = 'sim_read_traces_train_10k'  
     
     test_name = 'sliced_traces' 
@@ -65,7 +65,7 @@ def main():
 
     hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
     noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
-    mask = np.logical_and(8e-6<tc, tc<16e-6)
+    mask = np.logical_and(8e-6<tc, tc<12e-6)
     noise_traces = noise_traces[mask]
     print(f'Noise traces shape:{noise_traces.shape}')
 
@@ -154,7 +154,7 @@ def main():
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
         
-        return train_loader, val_loader, test_loader
+        return train_loader, val_loader, test_loader, dataset, val_dataset, test_dataset
 
     # Create DataLoaders
    
@@ -249,8 +249,16 @@ def main():
     # ax.plot(amps, amps_dist)
     # plt.show()
 
-    train_loader, val_loader, test_loader = get_loaders(amps, amps_dist)
+    train_loader, val_loader, test_loader, train_dataset, val_dataset, test_dataset = get_loaders(amps, amps_dist)
     model = train_model(train_loader, val_loader)
+    model_dir = os.path.join(current_dir, 'unet_params_ex')
+    print('Saving model parameters...')
+    os.makedirs(model_dir, exist_ok=True)  
+    state_dict_name = 'model_weights'  
+    state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
+    torch.save(model.state_dict(), state_dict_path)  
+    print('done')
+    
     model.eval()
     score = get_scores_unet(model, val_loader)
     print('score: ', score)
@@ -349,14 +357,20 @@ def main():
         print('Figures saved')
 
 
-
+    def pickle_dump_loader(dataloader, dataset, name):
+        pickle_path = os.path.join(model_dir, f'{name}.pkl')
+        with open(pickle_path, 'wb') as f:
+            pickle.dump({
+                'dataset': dataset,
+                'batch_size': dataloader.batch_size,
+                'num_workers': dataloader.num_workers,
+                'collate_fn': dataloader.collate_fn
+            }, f)
         
+    pickle_dump_loader(train_loader, train_dataset, 'train_loader')
+    pickle_dump_loader(val_loader, val_dataset, 'val_loader')
+    pickle_dump_loader(test_loader, test_dataset, 'test_loader')
+    
 
-    print('Saving model parameters...')
-    os.makedirs(model_dir, exist_ok=True)  
-    state_dict_name = 'model_weights'  
-    state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
-    torch.save(model.state_dict(), state_dict_path)  
-    print('done')
 if __name__ == '__main__':
     main()

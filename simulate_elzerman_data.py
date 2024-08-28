@@ -491,16 +491,16 @@ def main():
                 del data
                 gc.collect()
                 remaining_time = round((time.perf_counter() - start_time)/(i+1) * (n-i-1), 2)
-                
-                printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time:.2f}s', 'complete', length=25)
+                if i%100 == 0:
+                    printProgressBar(i+1, n, f'Simulating Elzerman traces... Time reamaining: {remaining_time:.2f}s', 'complete', length=25)
                 
             end_time = time.perf_counter()
             print('...took {}s\n'.format((end_time - start_time)))
 
 
     #save_read_traces('sim_read_traces_train_10k_pure', 10000)
-    save_read_traces('sim_read_traces_val_mixed', 100)
-    #save_read_traces('sim_read_traces_test_1k', 1000)
+    #save_read_traces('sim_read_traces_val_mixed', 100)
+    save_read_traces('sim_read_traces_train_100k', 100000)
     #save_read_traces('sim_read_traces_train_20k_pure', 20000)
     
     #save_read_traces('sim_elzerman_traces_train_1k', 1000)
