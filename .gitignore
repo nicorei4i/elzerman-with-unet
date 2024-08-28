@@ -1,2 +1,2 @@
 *.hdf5
-*.pkl
+/unet_params_ex/*.pkl
