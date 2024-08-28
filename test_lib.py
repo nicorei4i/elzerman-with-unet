@@ -60,35 +60,6 @@ dt = T / n_samples
 n_cycles = 2  
 batch_size = 32
 
-# def get_loaders(s):
-# # Define parameters for interference signals
-#     print('Noise Amp: ', s)
-#     interference_amps = np.ones(4) * s  
-#     interference_freqs = [50, 200, 600, 1000]  
-
-#     # Create instances of Noise and MinMaxScalerTransform classes
-#     noise_transform = Noise(n_samples, T, s, interference_amps, interference_freqs)
-#     scaler = MinMaxScalerTransform()
-    
-#     # Fit scalers using data from the HDF5 files
-#     scaler.fit_from_hdf5(hdf5_file_path)
-
-#     # Create instances of SimDataset class for training and validation datasets
-#     print('Creating datasets...')
-#     dataset = SimDataset(hdf5_file_path, scale_transform=scaler, noise_transform=noise_transform)  
-#     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-#     return loader
-
-# # Model setup
-# current_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
-# model_dir = os.path.join(current_dir, 'unet_weights')  # Directory for model weights
-# state_dict_name = 'model_weights'  # Name for the model state dictionary
-# state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  # Full path for saving model weights
-
-# # Load the model
-# model = UNet().to(device)
-# model.load_state_dict(torch.load(state_dict_path, map_location=device, weights_only=True))
-# model.eval()
 def format_number(num):
     try:
         # Attempt to convert num to a float
@@ -156,11 +127,6 @@ def plot_aenc(model, test_loader, model_dir, snr):
     model.eval()
     with torch.no_grad():  # Disable gradient calculation for visualization
         decoded_test_data = model(x)
-        # m = torch.nn.Softmax(dim=1)
-        # decoded_test_data = m(decoded_test_data)
-        # decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
-        # prediction_class = decoded_test_data.argmax(axis=1)
-        
         x = x.cpu()
         y = y.cpu()
         decoded_test_data=decoded_test_data.cpu().numpy()
@@ -215,12 +181,8 @@ def get_snr(loader):
 def get_snr_experimental(clean_trace, noisy_trace, scaler):
     clean_trace = scaler(clean_trace)
     clean_trace = clean_trace.reshape(-1)
-    # fig, ax = plt.subplots(1, 1)
-    # ax.plot(clean_trace)
-    # ax.plot(noisy_trace)
-    # plt.show(block=True)
-
-    signals = clean_trace
+    
+    # signals = clean_trace
     noise = noisy_trace-clean_trace
 
     signal = np.max(clean_trace) - np.min(clean_trace)
@@ -333,33 +295,27 @@ def get_scores_aenc(model, test_loader):
             recall = ntp / (ntp + nfn)
         #f1 = 2 * precision * recall / (precision + recall)
         return precision, recall, cm     
-# cms = []
-# precisions = []
-# recalls = []
-# snrs = []
-# interference_freqs = [50, 200, 600, 1000]  
-# noise_sigs = np.linspace(0.01, 2, 10)
-# for s in noise_sigs: 
-#     loader = get_loaders(s)
-#     #plot(loader)
-#     interference_amps = np.ones(4) * s  
-#     snrs.append(get_snr(T, s, interference_amps, interference_freqs))
-#     score = get_scores(loader)
-#     print(score)
-#     precisions.append(score[0])
-#     recalls.append(score[1])
-#     cms.append(score[2])
 
-# precisions = np.array(precisions)
-# recalls = np.array(recalls)
-# cms = np.array(cms)
 
-# #%%
-# fig, ax = plt.subplots(1, 1)
-# ax.scatter(snrs, precisions, label='precision')
-# ax.scatter(snrs, recalls, label='recall')
-# #ax.set_xscale('log')
-# #ax.set_yscale('log')
+def get_denoised_schmitt(model, loader):
+
+    with torch.no_grad():  # Disable gradient calculation for validation
+            for batch_x, batch_y in loader:  # Loop over each batch of validation data
+                batch_x = batch_x.to(device)
+                decoded_test_data = model(batch_x)
+                decoded_test_data = decoded_test_data.cpu()
+                batch_y = batch_y.numpy()
+                #batch_y = batch_y.squeeze(1)
+                m = torch.nn.Softmax(dim=1)
+                decoded_test_data = m(decoded_test_data)
+                decoded_test_data = decoded_test_data.cpu().numpy()
+                #prob_1 = decoded_test_data[:, 1, :]
+                prediction_class = decoded_test_data.argmax(axis=1)
+                #prediction_class = decoded_test_data.numpy().squeeze(1)    
+    
+
+
+
 def save_scores(snrs, precisions, recalls, cms, pickle_name):
     scores = {
         'snr':snrs,
@@ -389,7 +345,4 @@ def save_scores(snrs, precisions, recalls, cms, pickle_name):
     with open(pickle_path, 'wb') as f:
                 pickle.dump(scores, f)
 
-# ax.legend()
-# plt.show()
-# print(snrs)
-# print(scores)
+
