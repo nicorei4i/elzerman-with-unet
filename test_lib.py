@@ -335,11 +335,6 @@ def schmitt_trigger(new_traces_array, full_output=False):
 
     hist_smoothed = lib.moving_average(hist, 5) # smooth histogram data, might have to be adjusted depending on nb of bins
 
-
-
-    
-
-
     '''
     Fit double Gaussian to histogram using start parameters and determine threshold parameter a
     '''
@@ -350,9 +345,9 @@ def schmitt_trigger(new_traces_array, full_output=False):
     fig, ax = plt.subplots(1, 1)
     ax.scatter(bin_centers,hist_smoothed, s=0.5)
 
-    ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params))
+    # ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params))
     a1, m1, s1, a2, m2, s2, offset = start_params
-    ax.plot(bin_centers, lib.double_gaussian(bin_centers, a1, m1, s1, a2, m2, s2, offset), color='red')
+    # ax.plot(bin_centers, lib.double_gaussian(bin_centers, a1, m1, s1, a2, m2, s2, offset), color='red')
     
     ax.plot(bin_centers, lib.gaussian(bin_centers, *params[0:3]))
     ax.plot(bin_centers, lib.gaussian(bin_centers, *params[3:6]))

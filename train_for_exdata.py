@@ -20,7 +20,7 @@ from HDF5Data import HDF5Data
 from sklearn.preprocessing import MinMaxScaler
 import time
 import pickle
-from test_lib import get_snr, get_scores_unet, schmitt_trigger
+from test_lib import get_snr, get_scores_unet
 mpl.rcParams.update({'figure.max_open_warning': 0})
 plt.ion()
 
@@ -276,9 +276,8 @@ def main():
         m = torch.nn.Softmax(dim=1)
         decoded_test_data = m(decoded_test_data)
         decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
-        #prediction_class = decoded_test_data.argmax(axis=1)
-        np.save('newarray.npy', decoded_test_data[:, 1, :])
-        prediction_class, thresh_lower, thresh_upper = schmitt_trigger(decoded_test_data[:, 1, :], full_output=True)
+        prediction_class = decoded_test_data.argmax(axis=1)
+       
 
         x = x.cpu().numpy()
         y = y.cpu().numpy()
@@ -294,8 +293,6 @@ def main():
             axs[2].set_ylim(-0.1, 1.1)
             axs[2].tick_params(labelbottom=False)
             axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
-            axs[3].axhline(thresh_lower, color='red')
-            axs[3].axhline(thresh_upper, color='red')
             #axs[3].set_ylim(-0.1, 1.1)
             axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
             axs[0].set_ylim(-0.1, 1.1)
