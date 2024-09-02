@@ -46,8 +46,8 @@ def main():
     real_data_dir = os.path.join(current_dir, 'real_data')
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_10k'  
-    val_name = 'sim_read_traces_val'  
+    file_name = 'sim_read_traces_train_50k'  
+    val_name = 'sim_read_traces_train_10k'  
     
     test_name = 'sliced_traces' 
     # test_whole_name = 'sliced_traces_whole' 
@@ -178,7 +178,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 10 
+        num_epochs = 25 
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -242,7 +242,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(1, 1, 10000)
+    amps = np.linspace(2.5, 4, 10000)
     print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
     # amps_dist = np.exp(0.5*(-((x)/0.5)**2))
@@ -317,7 +317,7 @@ def main():
         prediction_class = decoded_test_data.argmax(axis=1)
         x = x.cpu().numpy()
         
-        for i in range(32):
+        for i in range(50):
             fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
             fig.suptitle('Test Trace')
             axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
