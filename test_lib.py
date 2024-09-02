@@ -204,7 +204,7 @@ def invert(arr):
     return np.array(arr, dtype=np.int32)
 
 
-def get_scores_unet(model, test_loader):
+def get_scores_unet(model, test_loader, start_read=start_read, end_read=end_read, thresh_lower=None, thresh_upper=None):
     # Initialize confusion matrix components
     nfn, nfp, ntn, ntp = 0, 0, 0, 0
     # Validate the model
@@ -219,7 +219,12 @@ def get_scores_unet(model, test_loader):
             decoded_test_data = m(decoded_test_data)
             decoded_test_data = decoded_test_data.cpu().numpy()
             #prob_1 = decoded_test_data[:, 1, :]
-            prediction_class = decoded_test_data.argmax(axis=1)
+            if thresh_lower is None or thresh_upper is None:
+                prediction_class = decoded_test_data.argmax(axis=1)
+            else: 
+                prediction_class = schmitt_trigger(decoded_test_data[:, 1, :], full_output=False, thresh_lower=thresh_lower, thresh_upper=thresh_upper)
+                prediction_class = prediction_class + 1
+
             #prediction_class = decoded_test_data.numpy().squeeze(1)
             for i, pred_trace in enumerate(prediction_class):                   
                 #selection = [prob[start_read:end_read]< 0.1]
@@ -317,61 +322,64 @@ def get_denoised_schmitt(model, loader):
 
 
 
-def schmitt_trigger(new_traces_array, full_output=False):
-    m = 3/7
-    b = -6/7
-    n_bins = 150
-
-    start_params = [1e2, 0.95, 0.01, 1e4, 0, 0.01, 3] # start parameters for Gaussian fit, must be determined manually 
-    bounds_double_gaussian = ([0,0.8,0,-0.2,-1,0,0],[1e7,1.2, 1,1e7,0.2,1,100])
+def schmitt_trigger(new_traces_array, full_output=False, thresh_lower = None, thresh_upper=None):
     
-    # start_params = None
-    # bounds_double_gaussian = (np.full(7, -np.inf), np.full(7, np.inf))
-
-    trace = np.array(new_traces_array).flatten()
-
-    hist, bins = np.histogram(trace, bins = n_bins, density = False)
-    bin_centers = 0.5*(bins[1:] + bins[:-1])
-
-    hist_smoothed = lib.moving_average(hist, 5) # smooth histogram data, might have to be adjusted depending on nb of bins
-
-    '''
-    Fit double Gaussian to histogram using start parameters and determine threshold parameter a
-    '''
-
-    params, cov = lib.fit_double_gaussian(bin_centers, hist_smoothed, start_params, bounds_double_gaussian)
-    print(params)
+    if thresh_lower is None or thresh_upper is None:
     
-    fig, ax = plt.subplots(1, 1)
-    ax.scatter(bin_centers,hist_smoothed, s=0.5)
+        m = 3/7
+        b = -6/7
+        n_bins = 150
 
-    # ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params))
-    a1, m1, s1, a2, m2, s2, offset = start_params
-    # ax.plot(bin_centers, lib.double_gaussian(bin_centers, a1, m1, s1, a2, m2, s2, offset), color='red')
-    
-    ax.plot(bin_centers, lib.gaussian(bin_centers, *params[0:3]))
-    ax.plot(bin_centers, lib.gaussian(bin_centers, *params[3:6]))
-    
-    ax.set_yscale('log')
-    ax.set_ylim(0.1, np.max(hist_smoothed))
+        start_params = [1e2, 0.95, 0.01, 1e4, 0, 0.01, 3] # start parameters for Gaussian fit, must be determined manually 
+        bounds_double_gaussian = ([0,0.8,0,-0.2,-1,0,0],[1e7,1.2, 1,1e7,0.2,1,100])
+        
+        # start_params = None
+        # bounds_double_gaussian = (np.full(7, -np.inf), np.full(7, np.inf))
 
-    snr = lib.snr_calc(params)
-    a = lib.det_a(snr, m, b)
+        trace = np.array(new_traces_array).flatten()
 
-    # print(snr)
-    # print(a)
-    # ax.set_xlim(min(bin_centers),max(bin_centers))
-    # ax.xlabel("Detector signal (mV)")
-    # ax.ylabel(r"Counts $(10^5)$")
-    # ax.title("SNR = {}".format(round(snr,2)))
-    plt.savefig('a.pdf')
-    #plt.show(block=True)
-    '''
-    Detection algorithm. 
-    In case of corrected frequencies, traces_array needs to be corrected first.
-    '''
-    thresh_lower = params[1]+a*params[2]
-    thresh_upper = params[4]-a*params[5]
+        hist, bins = np.histogram(trace, bins = n_bins, density = False)
+        bin_centers = 0.5*(bins[1:] + bins[:-1])
+
+        hist_smoothed = lib.moving_average(hist, 5) # smooth histogram data, might have to be adjusted depending on nb of bins
+
+        '''
+        Fit double Gaussian to histogram using start parameters and determine threshold parameter a
+        '''
+
+        params, cov = lib.fit_double_gaussian(bin_centers, hist_smoothed, start_params, bounds_double_gaussian)
+        print(params)
+        
+        fig, ax = plt.subplots(1, 1)
+        ax.scatter(bin_centers,hist_smoothed, s=0.5)
+
+        # ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params))
+        a1, m1, s1, a2, m2, s2, offset = start_params
+        # ax.plot(bin_centers, lib.double_gaussian(bin_centers, a1, m1, s1, a2, m2, s2, offset), color='red')
+        
+        ax.plot(bin_centers, lib.gaussian(bin_centers, *params[0:3]))
+        ax.plot(bin_centers, lib.gaussian(bin_centers, *params[3:6]))
+        
+        ax.set_yscale('log')
+        ax.set_ylim(0.1, np.max(hist_smoothed))
+
+        snr = lib.snr_calc(params)
+        a = lib.det_a(snr, m, b)
+
+        # print(snr)
+        # print(a)
+        # ax.set_xlim(min(bin_centers),max(bin_centers))
+        # ax.xlabel("Detector signal (mV)")
+        # ax.ylabel(r"Counts $(10^5)$")
+        # ax.title("SNR = {}".format(round(snr,2)))
+        plt.savefig('a.pdf')
+        #plt.show(block=True)
+        '''
+        Detection algorithm. 
+        In case of corrected frequencies, traces_array needs to be corrected first.
+        '''
+        thresh_lower = params[1]+a*params[2]
+        thresh_upper = params[4]-a*params[5]
 
     time_list = np.arange(0, new_traces_array.shape[-1])
     rect_traces = np.array([lib.detect_events_vec(time_list, trace, thresh_upper, thresh_lower)[-1] for trace in new_traces_array])

@@ -1,12 +1,17 @@
+
 #%%
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import pickle 
 import os
 from torch.utils.data import DataLoader
-from test_lib import schmitt_trigger
+from test_lib import schmitt_trigger, get_scores_unet
 from unet_model import UNet
 import torch
+import h5py
+from dataset import subtract_lb
 
 print('GPU available: ', torch.cuda.is_available())
 
@@ -20,6 +25,8 @@ else:
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 model_dir = os.path.join(current_dir, 'unet_params_ex')
+ex_data_dir = os.path.join(current_dir, 'real_data')
+
 def unpickle_loader(name, shuffle=True):
     pickle_path = os.path.join(model_dir, f'{name}.pkl')
     with open(pickle_path, 'rb') as f:
@@ -36,7 +43,7 @@ def unpickle_loader(name, shuffle=True):
 
 
 train_loader = unpickle_loader('train_loader')
-val_loader = unpickle_loader('test_loader')
+val_loader = unpickle_loader('val_loader')
 test_loader = unpickle_loader('test_loader', shuffle=False)
 
 
@@ -53,16 +60,100 @@ print('model loaded')
 
 
 
-with torch.no_grad():  
-    for x, y in val_loader:
-        x = x.to(device)
-        y = y.to(device)
-        
+
+#%%
+
+file_path = os.path.join(ex_data_dir, 'ordered_sliced_traces.hdf5')
+# Open the HDF5 file
+with h5py.File(file_path, 'r') as f:
+    data_group = f['Data']
+
+    t_load = data_group['TLoad'][:]
+    # print("TLoad data:")
+    # print(t_load)
+
+    read_traces = {}
+    for key in data_group.keys():
+        if key.startswith('ReadTraces_'):
+            time = int(key.split('_')[1])  
+            read_traces[time] = data_group[key][:]
+            # print(f"\nReadTraces at time {time}:")
+            # print(read_traces[time])
+
+t_L_array = []
+n_blip_array = []
+
+for t_L, traces in read_traces.items():
+    t_L_array.append(t_L)
+
+    with torch.no_grad():
+
+        traces = np.array([test_loader.dataset.scale_transform(subtract_lb(trace)) for trace in traces])
+        x = torch.tensor(traces, dtype=torch.float32).to(device)
         decoded_test_data = model(x)
         m = torch.nn.Softmax(dim=1)
         decoded_test_data = m(decoded_test_data)
         decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
-        #prediction_class = decoded_test_data.argmax(axis=1)
-        logits_array = np.vstack((logits_array, decoded_test_data[:, 1, :]))
-        
+        prediction_class = decoded_test_data.argmax(axis=1)
+    
+    n_blips = 0
+    for trace in prediction_class:
+        if np.min(trace) == 0:
+            n_blips += 1
+    n_blip_array.append(n_blips)        
 
+#%%
+fig, ax = plt.subplots()
+ax.scatter(t_L_array, n_blip_array, marker='.')
+ax.set_xlabel(r'$t_L$ ($\mu$s)')
+ax.set_ylabel(r'$N_{blip}$')
+
+fig_path = os.path.join(ex_data_dir, 'N_vs_tL.pdf')
+plt.savefig(fig_path)
+
+
+
+
+
+# #%%
+# thresh_lower = 0.4
+# thresh_upper = 0.6
+
+
+# score = get_scores_unet(model, val_loader, start_read=0, end_read=-1, thresh_lower=thresh_lower, thresh_upper=thresh_upper)
+# # score = get_scores_unet(model, val_loader, start_read=0, end_read=-1)
+# print('score: ', score)
+
+# #%%
+
+# with torch.no_grad():  
+#     x, y = next(iter(val_loader))
+#     x = x.to(device)
+#     y = y.to(device)
+    
+#     decoded_test_data = model(x)
+#     m = torch.nn.Softmax(dim=1)
+#     decoded_test_data = m(decoded_test_data)
+#     decoded_test_data = decoded_test_data.cpu().numpy()  # Get model output for visualization
+#     denoised_traces = schmitt_trigger(decoded_test_data[:, 1, :], full_output=False, thresh_lower=thresh_lower, thresh_upper=thresh_upper)
+#     denoised_traces = denoised_traces + 1
+
+
+#     for i in range(32):
+#         fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
+#         fig.suptitle('Test Trace')
+#         axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+#         axs[0].tick_params(labelbottom=False)
+#         axs[1].plot(denoised_traces[i], label='Denoised', color='mediumblue', linewidth=0.9)
+#         axs[1].tick_params(labelbottom=False)
+#         axs[1].set_ylim(-0.1, 1.1)
+#         axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+#         axs[2].set_ylim(-0.1, 1.1)
+#         axs[2].axhline(thresh_lower, color='red', linestyle='--')
+#         axs[2].axhline(thresh_upper, color='red', linestyle='--')
+        
+#         for ax in axs:
+#             ax.legend()
+#             #ax.set_ylim(-0.1, 1.1)
+#         #plt.show(block=False)
+#         plt.savefig(os.path.join(ex_data_dir, f'unet_test_{i}.pdf'))  # Save each figure

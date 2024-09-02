@@ -263,7 +263,7 @@ def main():
     print('done')
     
     model.eval()
-    score = get_scores_unet(model, val_loader)
+    score = get_scores_unet(model, val_loader, start_read=0, end_read=-1)
     print('score: ', score)
 
     with torch.no_grad():
