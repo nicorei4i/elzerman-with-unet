@@ -1,8 +1,8 @@
 
 #%%
 import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
+import matplotlib as mpl
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import pickle 
 import os
@@ -12,6 +12,10 @@ from unet_model import UNet
 import torch
 import h5py
 from dataset import subtract_lb
+from scipy.signal import welch
+from HDF5Data import HDF5Data
+from dataset import MeasuredNoise, MinMaxScalerTransform, subtract_lb
+from sklearn.preprocessing import RobustScaler
 
 print('GPU available: ', torch.cuda.is_available())
 
@@ -21,12 +25,86 @@ if device == torch.device('cuda'):
     num_workers = 4
 else: 
     num_workers = 1
-    #mpl.use('Qt5Agg')
+    mpl.use('Qt5Agg')
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
 model_dir = os.path.join(current_dir, 'unet_params_ex')
 ex_data_dir = os.path.join(current_dir, 'real_data')
+trace_dir = os.path.join(current_dir, 'sim_traces')
 
+file_name = 'sim_read_traces_train_10k'  
+test_name = 'sliced_traces' 
+
+hdf5_file_path_sim = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
+hdf5_file_path_test = os.path.join(ex_data_dir, '{}.hdf5'.format(test_name))  
+
+
+
+noise_name = '545_1.9T_pg13_vs_tc'
+
+noise_path = os.path.join(ex_data_dir, '{}.hdf5'.format(noise_name))
+hdf5Data_noise = HDF5Data(wdir=trace_dir)
+hdf5Data_noise.set_path(noise_path)
+
+hdf5Data_noise.set_filename()
+hdf5Data_noise.set_traces()
+hdf5Data_noise.set_measure_data_and_axis()
+
+tc = np.array(hdf5Data_noise.measure_axis[1]).T
+
+
+hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
+noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
+mask = np.logical_and(8e-6<tc, tc<12e-6)
+noise_traces = noise_traces[mask]
+print(f'Noise traces shape:{noise_traces.shape}')
+
+noise_transform = MeasuredNoise(noise_traces=noise_traces, amps=[4], amps_dist=[1])
+
+
+with h5py.File(hdf5_file_path_sim, 'r') as file:  
+    all_keys = file.keys()  
+    sim_data = np.array([noise_transform(file[key]) for key in all_keys],dtype=np.float32)  
+    print(f'Training traces shape:{sim_data.shape}')
+
+
+with h5py.File(hdf5_file_path_test, 'r') as file:  
+    all_keys = file.keys()  
+    test_data = np.array([subtract_lb(file[key]) for key in all_keys],dtype=np.float32)  
+    print(f'Test traces shape:{test_data.shape}')
+
+
+sim_scaler = RobustScaler()
+test_scaler = RobustScaler()
+
+
+sim_scaler.fit(sim_data)
+test_scaler.fit(test_data)
+
+sim_data = sim_scaler.transform(sim_data)
+test_data = test_scaler.transform(test_data)
+
+sim_psd = np.empty_like(welch(sim_data[0])[1])
+for trace in sim_data:
+    f_sim, Pxx = welch(trace)
+    sim_psd += Pxx
+
+
+test_psd = np.empty_like(welch(sim_data[0])[1])
+for trace in test_data:
+    f_test, Pxx = welch(trace)
+    test_psd += Pxx
+
+sim_psd  = sim_psd/ sim_data.shape[0]
+test_psd/= test_data.shape[0]
+
+plt.plot(f_sim, sim_psd, color='red', alpha=0.5)
+plt.plot(f_sim, test_psd, color='blue', alpha=0.5)
+plt.show()
+
+
+#%%
 def unpickle_loader(name, shuffle=True):
     pickle_path = os.path.join(model_dir, f'{name}.pkl')
     with open(pickle_path, 'rb') as f:

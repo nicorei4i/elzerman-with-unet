@@ -500,7 +500,9 @@ def main():
 
     #save_read_traces('sim_read_traces_train_10k_pure', 10000)
     #save_read_traces('sim_read_traces_val_mixed', 100)
-    save_read_traces('sim_read_traces_train_100k', 100000)
+    save_read_traces('sim_read_traces_train_10k', 10000)
+    save_read_traces('sim_read_traces_val', 100)
+    
     #save_read_traces('sim_read_traces_train_20k_pure', 20000)
     
     #save_read_traces('sim_elzerman_traces_train_1k', 1000)

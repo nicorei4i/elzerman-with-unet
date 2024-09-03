@@ -17,7 +17,7 @@ from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise, subtract_lb
 from HDF5Data import HDF5Data
-from sklearn.preprocessing import MinMaxScaler
+
 import time
 import pickle
 from test_lib import get_snr, get_scores_unet
