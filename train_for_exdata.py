@@ -46,8 +46,8 @@ def main():
     real_data_dir = os.path.join(current_dir, 'real_data')
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_50k'  
-    val_name = 'sim_read_traces_train_10k'  
+    file_name = 'sim_read_traces_train_10k'  
+    val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     # test_whole_name = 'sliced_traces_whole' 
