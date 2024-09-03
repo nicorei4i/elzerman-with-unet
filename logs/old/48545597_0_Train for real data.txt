@@ -1,0 +1,70 @@
+GPU available:  True
+GPU available:  True
+cuda
+sim_read_traces_train_20k
+sim_read_traces_val
+sliced_traces
+sliced_traces_whole
+(20000, 5000)
+(100, 5000)
+(20402, 5000)
+Creating datasets...
+20086
+Start training...
+Epoch [1/50], Train Loss: 0.533637, Validation Loss: 0.403424, lr = 0.001, duration = 7.6920
+Epoch [2/50], Train Loss: 0.353234, Validation Loss: 0.316296, lr = 0.001, duration = 6.7484
+Epoch [3/50], Train Loss: 0.312790, Validation Loss: 0.303998, lr = 0.001, duration = 6.5557
+Epoch [4/50], Train Loss: 0.291727, Validation Loss: 0.262966, lr = 0.001, duration = 6.6676
+Epoch [5/50], Train Loss: 0.271034, Validation Loss: 0.240506, lr = 0.001, duration = 6.5776
+Epoch [6/50], Train Loss: 0.249740, Validation Loss: 0.278063, lr = 0.001, duration = 6.6343
+Epoch [7/50], Train Loss: 0.230089, Validation Loss: 0.245320, lr = 0.001, duration = 6.6866
+Epoch [8/50], Train Loss: 0.213073, Validation Loss: 0.248536, lr = 0.001, duration = 6.6815
+Epoch [9/50], Train Loss: 0.198051, Validation Loss: 0.208393, lr = 0.001, duration = 6.6508
+Epoch [10/50], Train Loss: 0.185732, Validation Loss: 0.217580, lr = 0.001, duration = 6.4847
+Epoch [11/50], Train Loss: 0.172879, Validation Loss: 0.212928, lr = 0.001, duration = 6.4686
+Epoch [12/50], Train Loss: 0.162477, Validation Loss: 0.171251, lr = 0.001, duration = 6.4320
+Epoch [13/50], Train Loss: 0.151957, Validation Loss: 0.190918, lr = 0.001, duration = 6.5902
+Epoch [14/50], Train Loss: 0.138366, Validation Loss: 0.163255, lr = 0.001, duration = 6.5869
+Epoch [15/50], Train Loss: 0.128726, Validation Loss: 0.165795, lr = 0.001, duration = 6.4202
+Epoch [16/50], Train Loss: 0.124523, Validation Loss: 0.143671, lr = 0.001, duration = 6.5162
+Epoch [17/50], Train Loss: 0.120387, Validation Loss: 0.144678, lr = 0.001, duration = 6.4623
+Epoch [18/50], Train Loss: 0.118410, Validation Loss: 0.139361, lr = 0.001, duration = 6.5723
+Epoch [19/50], Train Loss: 0.118411, Validation Loss: 0.138647, lr = 0.001, duration = 6.3915
+Epoch [20/50], Train Loss: 0.115787, Validation Loss: 0.140732, lr = 0.001, duration = 6.5215
+Epoch [21/50], Train Loss: 0.112748, Validation Loss: 0.147650, lr = 0.001, duration = 6.6181
+Epoch [22/50], Train Loss: 0.110196, Validation Loss: 0.139211, lr = 0.001, duration = 6.6155
+Epoch [23/50], Train Loss: 0.113081, Validation Loss: 0.149483, lr = 0.001, duration = 6.6323
+Epoch [24/50], Train Loss: 0.112038, Validation Loss: 0.127531, lr = 0.001, duration = 6.5619
+Epoch [25/50], Train Loss: 0.112350, Validation Loss: 0.131665, lr = 0.001, duration = 6.6425
+Epoch [26/50], Train Loss: 0.112165, Validation Loss: 0.148614, lr = 0.001, duration = 6.6981
+Epoch [27/50], Train Loss: 0.110280, Validation Loss: 0.143500, lr = 0.001, duration = 6.7012
+Epoch [28/50], Train Loss: 0.111201, Validation Loss: 0.127990, lr = 0.001, duration = 6.6320
+Epoch [29/50], Train Loss: 0.111326, Validation Loss: 0.109800, lr = 0.001, duration = 6.5593
+Epoch [30/50], Train Loss: 0.108769, Validation Loss: 0.169300, lr = 0.001, duration = 6.5973
+Epoch [31/50], Train Loss: 0.111230, Validation Loss: 0.115199, lr = 0.001, duration = 6.5744
+Epoch [32/50], Train Loss: 0.108139, Validation Loss: 0.153973, lr = 0.001, duration = 6.5759
+Epoch [33/50], Train Loss: 0.109992, Validation Loss: 0.116981, lr = 0.001, duration = 6.5864
+Epoch [34/50], Train Loss: 0.107126, Validation Loss: 0.128431, lr = 0.001, duration = 6.4932
+Epoch [35/50], Train Loss: 0.111142, Validation Loss: 0.130089, lr = 0.001, duration = 6.5502
+Epoch [36/50], Train Loss: 0.107965, Validation Loss: 0.121363, lr = 0.001, duration = 6.6379
+Epoch [37/50], Train Loss: 0.109363, Validation Loss: 0.098373, lr = 0.001, duration = 6.5760
+Epoch [38/50], Train Loss: 0.109220, Validation Loss: 0.168920, lr = 0.001, duration = 6.6498
+Epoch [39/50], Train Loss: 0.108620, Validation Loss: 0.162758, lr = 0.001, duration = 6.5625
+Epoch [40/50], Train Loss: 0.107415, Validation Loss: 0.134677, lr = 0.001, duration = 6.7592
+Epoch [41/50], Train Loss: 0.108275, Validation Loss: 0.146617, lr = 0.001, duration = 6.6210
+Epoch [42/50], Train Loss: 0.109213, Validation Loss: 0.172444, lr = 0.001, duration = 6.5631
+Epoch [43/50], Train Loss: 0.107735, Validation Loss: 0.127496, lr = 0.001, duration = 6.6118
+Epoch [44/50], Train Loss: 0.105333, Validation Loss: 0.120596, lr = 0.001, duration = 6.6903
+Epoch [45/50], Train Loss: 0.105666, Validation Loss: 0.158463, lr = 0.001, duration = 6.5879
+Epoch [46/50], Train Loss: 0.108218, Validation Loss: 0.168046, lr = 0.001, duration = 6.5307
+Epoch [47/50], Train Loss: 0.106163, Validation Loss: 0.149437, lr = 0.001, duration = 6.7400
+Epoch [48/50], Train Loss: 0.107695, Validation Loss: 0.124426, lr = 0.001, duration = 6.5029
+Epoch [49/50], Train Loss: 0.104500, Validation Loss: 0.135927, lr = 0.001, duration = 6.5807
+Epoch [50/50], Train Loss: 0.106270, Validation Loss: 0.156846, lr = 0.001, duration = 6.3906
+
+Finished Training in 331.8
+
+Figures saved
+Figures saved
+Saving model parameters...
+done

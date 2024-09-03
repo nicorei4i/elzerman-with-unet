@@ -178,7 +178,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 10 
+        num_epochs = 25 
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -242,7 +242,7 @@ def main():
 #     amps = np.array([sigma, sigma, sigma, sigma])
 #     print(amps.shape)
 #     weights_amps = np.array([weights_sigma, weights_sigma, weights_sigma, weights_sigma])
-    amps = np.linspace(1, 1, 10000)
+    amps = np.linspace(2.5, 4, 10000)
     print(f'Noise amps are from {np.min(amps)} to {np.max(amps)}')
     x = np.linspace(-1, 1, len(amps))
     # amps_dist = np.exp(0.5*(-((x)/0.5)**2))
@@ -372,7 +372,7 @@ def main():
             }, f)
         
     pickle_dump_loader(train_loader, train_dataset, 'train_loader')
-    pickle_dump_loader(val_loader, val_dataset, 'val_loader')
+    # pickle_dump_loader(val_loader, val_dataset, 'val_loader')
     pickle_dump_loader(test_loader, test_dataset, 'test_loader')
     
 

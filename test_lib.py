@@ -154,6 +154,40 @@ def plot_aenc(model, test_loader, model_dir, snr):
         plt.savefig(os.path.join(model_dir, f'aenc_{snr}_{i}.pdf'))  # Save each figure
 
 
+def plot_schmitt(test_loader, model_dir, snr):
+    # Visualize validation dataset predictions
+    x, y = next(iter(test_loader))  # Get a batch of validation data
+    x = x.cpu().numpy().squeeze(1)
+    y = y.cpu().numpy().squeeze(1)
+
+    prediction_class, thresh_lower, thresh_upper = schmitt_trigger(x, full_output=True)           
+
+    # Plot the results
+    print('Plotting the results...')
+    snr = format_number(snr)
+    for i in range(2):
+        fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
+
+        fig.suptitle('Validation Traces')
+
+        axs[1].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+        axs[1].axhline(thresh_lower, color='red', linestyle='--', label='Thresholds')
+        axs[1].axhline(thresh_upper, color='red', linestyle='--', label='Thresholds')
+        axs[1].tick_params(labelbottom=False)
+        axs[1].legend()
+
+        #axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[2].plot(prediction_class[i], label='denoised', color='mediumblue', linewidth=0.9)
+        axs[2].legend()
+
+        axs[0].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[0].tick_params(labelbottom=False)
+        axs[0].legend()
+        #plt.show(block=False)
+       
+        plt.savefig(os.path.join(model_dir, f'aenc_{snr}_{i}.pdf'))  # Save each figure
+
+
 def get_snr(loader):
     x, y = next(iter(loader))  # Get a batch of validation data
     x = x.cpu().numpy()
@@ -299,6 +333,50 @@ def get_scores_aenc(model, test_loader):
             recall = ntp / (ntp + nfn)
         #f1 = 2 * precision * recall / (precision + recall)
         return precision, recall, cm     
+
+
+def get_scores_schmitt(test_loader, start_read=start_read, end_read=end_read):
+    # Initialize confusion matrix components
+    nfn, nfp, ntn, ntp = 0, 0, 0, 0
+    # Validate the model
+    with torch.no_grad():  # Disable gradient calculation for validation
+        for batch_x, batch_y in test_loader:  # Loop over each batch of validation data
+            
+            batch_x = batch_x.cpu().numpy().squeeze(1)
+            batch_y = batch_y.cpu().numpy().squeeze(1)
+
+            prediction_class, thresh_lower, thresh_upper = schmitt_trigger(batch_x, full_output=True)           
+            print(f'lower: {thresh_lower}, upper: {thresh_upper}') 
+        
+            for i, pred_trace in enumerate(prediction_class):                   
+                #selection = invert(pred_trace[start_read:end_read])
+                selection = [pred_trace[start_read:end_read] < 0.01]
+                selection = np.array(selection)
+                current_mask = invert(batch_y[i, :][start_read:end_read])
+                
+                if selection.any() and current_mask.any():
+                    ntp += 1
+                elif selection.any() and not current_mask.any():
+                    nfp += 1
+                elif not selection.any() and current_mask.any():
+                    nfn += 1
+                elif not selection.any() and not current_mask.any():
+                    ntn += 1
+
+        # Compute and display metrics
+        cm = np.array([[ntp, nfp], [nfn, ntn]])
+        #accuracy = (ntp + ntn) / (ntp + ntn + nfn + nfp)
+        if ntp + nfp == 0: 
+            precision = np.nan
+        else:
+            precision = ntp / (ntp + nfp)
+        if ntp + nfp == 0:
+            recall = np.nan
+        else:
+            recall = ntp / (ntp + nfn)
+        #f1 = 2 * precision * recall / (precision + recall)
+        return precision, recall, cm     
+
 
 
 def get_denoised_schmitt(model, loader):

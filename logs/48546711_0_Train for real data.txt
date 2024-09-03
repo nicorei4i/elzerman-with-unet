@@ -1,7 +1,0 @@
-GPU available:  True
-GPU available:  True
-cuda
-sim_read_traces_train_10k_pure
-sim_read_traces_val_pure
-sliced_traces
-sliced_traces_whole

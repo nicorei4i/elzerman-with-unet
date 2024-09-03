@@ -1,0 +1,8 @@
+GPU available:  True
+GPU available:  True
+cuda
+Error setting HDF5 data: [Errno 11] Unable to open file (unable to lock file, errno = 11, error message = 'Resource temporarily unavailable')
+Error setting HDF5 data: [Errno 11] Unable to open file (unable to lock file, errno = 11, error message = 'Resource temporarily unavailable')
+Error getting shape of data: 'NoneType' object is not subscriptable
+Error creating traces as array: 'NoneType' object is not subscriptable
+Error setting HDF5 data: [Errno 11] Unable to open file (unable to lock file, errno = 11, error message = 'Resource temporarily unavailable')

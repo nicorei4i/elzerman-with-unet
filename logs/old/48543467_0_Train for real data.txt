@@ -1,0 +1,11 @@
+GPU available:  True
+GPU available:  True
+cuda
+sim_read_traces_train_10k
+sim_read_traces_val
+sliced_traces
+sliced_traces_whole
+(10000, 5000)
+(100, 5000)
+(20402, 5000)
+Creating datasets...

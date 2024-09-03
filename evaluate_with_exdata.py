@@ -33,75 +33,75 @@ model_dir = os.path.join(current_dir, 'unet_params_ex')
 ex_data_dir = os.path.join(current_dir, 'real_data')
 trace_dir = os.path.join(current_dir, 'sim_traces')
 
-file_name = 'sim_read_traces_train_10k'  
-test_name = 'sliced_traces' 
+# file_name = 'sim_read_traces_train_10k'  
+# test_name = 'sliced_traces' 
 
-hdf5_file_path_sim = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
-hdf5_file_path_test = os.path.join(ex_data_dir, '{}.hdf5'.format(test_name))  
-
-
-
-noise_name = '545_1.9T_pg13_vs_tc'
-
-noise_path = os.path.join(ex_data_dir, '{}.hdf5'.format(noise_name))
-hdf5Data_noise = HDF5Data(wdir=trace_dir)
-hdf5Data_noise.set_path(noise_path)
-
-hdf5Data_noise.set_filename()
-hdf5Data_noise.set_traces()
-hdf5Data_noise.set_measure_data_and_axis()
-
-tc = np.array(hdf5Data_noise.measure_axis[1]).T
+# hdf5_file_path_sim = os.path.join(trace_dir, '{}.hdf5'.format(file_name))  
+# hdf5_file_path_test = os.path.join(ex_data_dir, '{}.hdf5'.format(test_name))  
 
 
-hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
-noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
-mask = np.logical_and(8e-6<tc, tc<12e-6)
-noise_traces = noise_traces[mask]
-print(f'Noise traces shape:{noise_traces.shape}')
 
-noise_transform = MeasuredNoise(noise_traces=noise_traces, amps=[4], amps_dist=[1])
+# noise_name = '545_1.9T_pg13_vs_tc'
 
+# noise_path = os.path.join(ex_data_dir, '{}.hdf5'.format(noise_name))
+# hdf5Data_noise = HDF5Data(wdir=trace_dir)
+# hdf5Data_noise.set_path(noise_path)
 
-with h5py.File(hdf5_file_path_sim, 'r') as file:  
-    all_keys = file.keys()  
-    sim_data = np.array([noise_transform(file[key]) for key in all_keys],dtype=np.float32)  
-    print(f'Training traces shape:{sim_data.shape}')
+# hdf5Data_noise.set_filename()
+# hdf5Data_noise.set_traces()
+# hdf5Data_noise.set_measure_data_and_axis()
 
-
-with h5py.File(hdf5_file_path_test, 'r') as file:  
-    all_keys = file.keys()  
-    test_data = np.array([subtract_lb(file[key]) for key in all_keys],dtype=np.float32)  
-    print(f'Test traces shape:{test_data.shape}')
+# tc = np.array(hdf5Data_noise.measure_axis[1]).T
 
 
-sim_scaler = RobustScaler()
-test_scaler = RobustScaler()
+# hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
+# noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
+# mask = np.logical_and(8e-6<tc, tc<12e-6)
+# noise_traces = noise_traces[mask]
+# print(f'Noise traces shape:{noise_traces.shape}')
+
+# noise_transform = MeasuredNoise(noise_traces=noise_traces, amps=[4], amps_dist=[1])
 
 
-sim_scaler.fit(sim_data)
-test_scaler.fit(test_data)
-
-sim_data = sim_scaler.transform(sim_data)
-test_data = test_scaler.transform(test_data)
-
-sim_psd = np.empty_like(welch(sim_data[0])[1])
-for trace in sim_data:
-    f_sim, Pxx = welch(trace)
-    sim_psd += Pxx
+# with h5py.File(hdf5_file_path_sim, 'r') as file:  
+#     all_keys = file.keys()  
+#     sim_data = np.array([noise_transform(file[key]) for key in all_keys],dtype=np.float32)  
+#     print(f'Training traces shape:{sim_data.shape}')
 
 
-test_psd = np.empty_like(welch(sim_data[0])[1])
-for trace in test_data:
-    f_test, Pxx = welch(trace)
-    test_psd += Pxx
+# with h5py.File(hdf5_file_path_test, 'r') as file:  
+#     all_keys = file.keys()  
+#     test_data = np.array([subtract_lb(file[key]) for key in all_keys],dtype=np.float32)  
+#     print(f'Test traces shape:{test_data.shape}')
 
-sim_psd  = sim_psd/ sim_data.shape[0]
-test_psd/= test_data.shape[0]
 
-plt.plot(f_sim, sim_psd, color='red', alpha=0.5)
-plt.plot(f_sim, test_psd, color='blue', alpha=0.5)
-plt.show()
+# sim_scaler = RobustScaler()
+# test_scaler = RobustScaler()
+
+
+# sim_scaler.fit(sim_data)
+# test_scaler.fit(test_data)
+
+# sim_data = sim_scaler.transform(sim_data)
+# test_data = test_scaler.transform(test_data)
+
+# sim_psd = np.empty_like(welch(sim_data[0])[1])
+# for trace in sim_data:
+#     f_sim, Pxx = welch(trace)
+#     sim_psd += Pxx
+
+
+# test_psd = np.empty_like(welch(sim_data[0])[1])
+# for trace in test_data:
+#     f_test, Pxx = welch(trace)
+#     test_psd += Pxx
+
+# sim_psd  = sim_psd/ sim_data.shape[0]
+# test_psd/= test_data.shape[0]
+
+# plt.plot(f_sim, sim_psd, color='red', alpha=0.5)
+# plt.plot(f_sim, test_psd, color='blue', alpha=0.5)
+# plt.show()
 
 
 #%%
@@ -121,7 +121,7 @@ def unpickle_loader(name, shuffle=True):
 
 
 train_loader = unpickle_loader('train_loader')
-val_loader = unpickle_loader('val_loader')
+# val_loader = unpickle_loader('val_loader')
 test_loader = unpickle_loader('test_loader', shuffle=False)
 
 

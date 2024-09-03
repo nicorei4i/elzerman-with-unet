@@ -1,0 +1,5 @@
+GPU available:  True
+GPU available:  True
+cuda
+Error getting shape of data: 'Unable to synchronously open object (component not found)'
+Error creating traces as array: "Unable to synchronously open object (object 'Traces' doesn't exist)"

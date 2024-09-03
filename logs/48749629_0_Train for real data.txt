@@ -1,0 +1,3 @@
+GPU available:  False
+GPU available:  False
+cpu
