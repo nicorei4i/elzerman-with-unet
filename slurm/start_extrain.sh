@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#SBATCH --mem=32GB
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --job-name="Train for real data"

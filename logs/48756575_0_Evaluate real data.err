@@ -1,0 +1,29 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+Traceback (most recent call last):
+  File "/home/md334167/elzerman-with-unet/evaluate_with_exdata.py", line 180, in <module>
+    if np.min(trace) == 0:
+       ^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/numpy/core/fromnumeric.py", line 2953, in min
+    return _wrapreduction(a, np.minimum, 'min', axis, None, out,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/numpy/core/fromnumeric.py", line 86, in _wrapreduction
+    return reduction(axis=axis, out=out, **passkwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/numpy/_core/_methods.py", line 14, in <module>
+    from numpy._core import numerictypes as nt
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/numpy/_core/numerictypes.py", line 102, in <module>
+    from ._type_aliases import (
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/numpy/_core/_type_aliases.py", line 38, in <module>
+    allTypes[_abstract_type_name] = getattr(ma, _abstract_type_name)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'numpy.core.multiarray' has no attribute 'generic'

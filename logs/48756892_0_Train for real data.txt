@@ -1,0 +1,17 @@
+GPU available:  True
+GPU available:  True
+cuda
+Noise traces shape:(81, 100000)
+sim_read_traces_train_50k
+sim_read_traces_train_10k
+sliced_traces
+Training traces shape:(50000, 5000)
+Validation traces shape:(10000, 5000)
+Test traces shape:(20402, 5000)
+Noise amps are from 2.5 to 4.0
+Creating datasets...
+20086
+Start training...
+Epoch [1/25], Train Loss: 0.373191, Validation Loss: 0.280885, lr = 0.001, duration = 64.8701
+Epoch [2/25], Train Loss: 0.214268, Validation Loss: 0.214890, lr = 0.001, duration = 61.1534
+Epoch [3/25], Train Loss: 0.168434, Validation Loss: 0.194415, lr = 0.001, duration = 61.2755

@@ -1,0 +1,5 @@
+GPU available:  True
+GPU available:  True
+Loading model
+model loaded
+(5000,)

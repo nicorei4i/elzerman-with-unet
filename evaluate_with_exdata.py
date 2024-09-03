@@ -176,6 +176,7 @@ for t_L, traces in read_traces.items():
     
     n_blips = 0
     for trace in prediction_class:
+        print(trace.shape)
         if np.min(trace) == 0:
             n_blips += 1
     n_blip_array.append(n_blips)        
