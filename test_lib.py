@@ -158,7 +158,9 @@ def plot_schmitt(test_loader, model_dir, snr):
     # Visualize validation dataset predictions
     x, y = next(iter(test_loader))  # Get a batch of validation data
     x = x.cpu().numpy().squeeze(1)
-    y = y.cpu().numpy().squeeze(1)
+    y = y.cpu().numpy()
+    if len(y.shape)==3:
+        y = y.squeeze(1)
 
     prediction_class, thresh_lower, thresh_upper = schmitt_trigger(x, full_output=True)           
 
@@ -170,7 +172,7 @@ def plot_schmitt(test_loader, model_dir, snr):
 
         fig.suptitle('Validation Traces')
 
-        axs[1].plot(x[i].numpy().reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+        axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
         axs[1].axhline(thresh_lower, color='red', linestyle='--', label='Thresholds')
         axs[1].axhline(thresh_upper, color='red', linestyle='--', label='Thresholds')
         axs[1].tick_params(labelbottom=False)
@@ -180,12 +182,12 @@ def plot_schmitt(test_loader, model_dir, snr):
         axs[2].plot(prediction_class[i], label='denoised', color='mediumblue', linewidth=0.9)
         axs[2].legend()
 
-        axs[0].plot(y[i].numpy().reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+        axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
         axs[0].tick_params(labelbottom=False)
         axs[0].legend()
         #plt.show(block=False)
        
-        plt.savefig(os.path.join(model_dir, f'aenc_{snr}_{i}.pdf'))  # Save each figure
+        plt.savefig(os.path.join(model_dir, f'schmitt_{snr}_{i}.pdf'))  # Save each figure
 
 
 def get_snr(loader):
@@ -195,7 +197,8 @@ def get_snr(loader):
     x = np.array(x, dtype=np.float32)
     y = np.array(y, dtype=np.float32)
     x = x.squeeze(1)
-    y = y.squeeze(1)
+    if len(y.shape)==3:
+        y = y.squeeze(1)
 
     signals = y
     noise = x-y
@@ -210,24 +213,6 @@ def get_snr(loader):
 
     return snr
 
-
-def get_snr_experimental(clean_trace, noisy_trace, scaler):
-    clean_trace = scaler(clean_trace)
-    clean_trace = clean_trace.reshape(-1)
-    
-    # signals = clean_trace
-    noise = noisy_trace-clean_trace
-
-    signal = np.max(clean_trace) - np.min(clean_trace)
-    signal = signal**2
-    noise_powers = np.mean(noise**2)
-
-
-    snr = np.mean(signal/noise_powers)
-
-    snr = 10* np.log10(snr)
-
-    return snr
 
 
 def invert(arr):
@@ -343,7 +328,9 @@ def get_scores_schmitt(test_loader, start_read=start_read, end_read=end_read):
         for batch_x, batch_y in test_loader:  # Loop over each batch of validation data
             
             batch_x = batch_x.cpu().numpy().squeeze(1)
-            batch_y = batch_y.cpu().numpy().squeeze(1)
+            batch_y = batch_y.cpu().numpy()
+            if len(batch_y.shape)==3:
+                batch_y = batch_y.squeeze(1)
 
             prediction_class, thresh_lower, thresh_upper = schmitt_trigger(batch_x, full_output=True)           
             print(f'lower: {thresh_lower}, upper: {thresh_upper}') 

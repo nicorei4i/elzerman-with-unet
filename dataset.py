@@ -136,7 +136,7 @@ class MeasuredNoise(object):
         self.amps_dist = amps_dist
  
 class Noise(object):
-    def __init__(self, shape, sim_t, sigma, amps, freqs, weights_sigma=None, weights_amps=None):
+    def __init__(self, shape, sim_t, sigma, amps, freqs):
         """
         Initialize the Noise object with the specified parameters.
 
@@ -145,15 +145,12 @@ class Noise(object):
         sigma (float): Standard deviation for noise generation.
         sim_t (float): Total simulation time.
         """
-        self.sigma_pos = sigma
+        self.sigma = sigma
         self.shape = shape
         self.T = sim_t
-        self.amps_pos = amps
+        self.amps = amps
         self.freqs = freqs
         
-        self.weights_sigma = weights_sigma
-        self.weights_amps = weights_amps
-
     def __call__(self, trace, noise_scaling=None):
         """
         Generate noisy trace by adding white noise, pink noise, and interference signal to the input trace.
@@ -165,24 +162,11 @@ class Noise(object):
         Returns:
         array-like: The noisy trace.
         """
-        if hasattr(self.sigma_pos, "__len__"):
-            if hasattr(self.weights_sigma, "__len__"): 
-                
-                self.sigma = np.random.choice(self.sigma_pos, p=self.weights_sigma)
-            else:            
-                self.sigma = np.random.choice(self.sigma_pos)
-        else: 
-            self.sigma = self.sigma_pos
-
+        
         self.white_sigma = self.sigma
         self.pink_sigma = 0.1 * self.sigma
 
-        if len(self.amps_pos.shape) == 2:
-            if len(self.weights_amps.shape) == 2:
-                self.amps = [np.random.choice(self.amps_pos[i, :], p=self.weights_amps[i, :]) for i in range(self.amps_pos.shape[0])] 
-            else:
-                self.amps = [np.random.choice(self.amps_pos[i, :]) for i in range(self.amps_pos.shape[0])] 
-
+        
         if noise_scaling is not None:
             self.pink_sigma = noise_scaling * self.white_sigma
 

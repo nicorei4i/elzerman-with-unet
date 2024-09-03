@@ -414,7 +414,7 @@ def main():
             start_time = time.perf_counter()
             for i in range(n):
             
-                _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, n_samples, signal_amp)
+                _, _, data = generate_elzerman_signal([lambda_in, lambda_out, lambda_flip], [t_L, t_W, t_R, t_U], voltages, 1, 8192, signal_amp)
                 name = f'trace_{i}'
                 if name in file:
                     del file[name]  # Delete the existing dataset
@@ -500,14 +500,14 @@ def main():
 
     #save_read_traces('sim_read_traces_train_10k_pure', 10000)
     #save_read_traces('sim_read_traces_val_mixed', 100)
-    save_read_traces('sim_read_traces_train_10k', 10000)
-    save_read_traces('sim_read_traces_val', 100)
+    # save_read_traces('sim_read_traces_train_10k', 10000)
+    # save_read_traces('sim_read_traces_val', 100)
     
     #save_read_traces('sim_read_traces_train_20k_pure', 20000)
     
     #save_read_traces('sim_elzerman_traces_train_1k', 1000)
-    #save_elzerman_traces('sim_elzerman_traces_val', 100)
-    #save_elzerman_traces('sim_elzerman_traces_train_10k', 10000)
+    save_elzerman_traces('sim_elzerman_traces_test_100', 100)
+    save_elzerman_traces('sim_elzerman_traces_test_1k', 10000)
 
     
 
@@ -515,7 +515,9 @@ if __name__ == '__main__':
     main()
 #%%
 
-
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
 
 def show_data(file_name):
     current_dir = os.path.dirname(os.path.abspath(__file__))

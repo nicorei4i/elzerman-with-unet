@@ -16,6 +16,8 @@ from scipy.signal import welch
 from HDF5Data import HDF5Data
 from dataset import MeasuredNoise, MinMaxScalerTransform, subtract_lb
 from sklearn.preprocessing import RobustScaler
+import scipy as sc
+
 
 print('GPU available: ', torch.cuda.is_available())
 
@@ -120,7 +122,7 @@ def unpickle_loader(name, shuffle=True):
     return new_dataloader
 
 
-train_loader = unpickle_loader('train_loader')
+#train_loader = unpickle_loader('train_loader')
 # val_loader = unpickle_loader('val_loader')
 test_loader = unpickle_loader('test_loader', shuffle=False)
 
@@ -132,7 +134,7 @@ model = UNet()
 model_dir = os.path.join(current_dir, 'unet_params_ex')
 state_dict_name = 'model_weights'  
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
-model.load_state_dict(torch.load(state_dict_path, weights_only=True))  
+model.load_state_dict(torch.load(state_dict_path, weights_only=True, map_location=torch.device('cpu')))  
 model.eval()
 print('model loaded')
 
@@ -176,16 +178,54 @@ for t_L, traces in read_traces.items():
     
     n_blips = 0
     for trace in prediction_class:
-        print(trace.shape)
         if np.min(trace) == 0:
             n_blips += 1
     n_blip_array.append(n_blips)        
 
+n_blip_array = np.array(n_blip_array)
+t_L_array = np.array(t_L_array)
+
+
+
 #%%
-fig, ax = plt.subplots()
-ax.scatter(t_L_array, n_blip_array, marker='.')
+
+ind = np.argsort(t_L_array)
+t_L_array = t_L_array[ind]
+n_blip_array = n_blip_array[ind]
+
+
+def func1(x, A, G_in, T1, offset):
+    return A*(np.exp(-x/T1) - np.exp(-G_in*x)) + offset
+p01 = [200, 0.04, 90, 15]
+popt1, pcov1 = sc.optimize.curve_fit(func1, t_L_array[t_L_array<200], n_blip_array[t_L_array<200])
+print(popt1)
+
+def func2(x, A, T1, offset): 
+    return A*(np.exp(-x/T1)) + offset
+
+popt2, pcov2 = sc.optimize.curve_fit(func2, t_L_array[t_L_array>100], n_blip_array[t_L_array>100])
+
+def func3(x, A, G_in, T1, offset):
+    return A*(1-np.exp((-G_in + 1/T1)*x)) + offset
+
+popt3, pcov3 = sc.optimize.curve_fit(func1, t_L_array[t_L_array>100], n_blip_array[t_L_array>100])
+
+
+
+prop_cycle = plt.rcParams['axes.prop_cycle']
+colors = prop_cycle.by_key()['color']
+fig, ax = plt.subplots(1, 1)
+ax.scatter(t_L_array, n_blip_array, marker='.', color = colors[1], alpha=0.6, label='Denoised experimental data')
+#ax.plot(t_L_array,   np.exp(-lambda_flip * t_L_array), color='r', linestyle='dashdot')
+# ax.plot(t_L_array[t_L_array<200], func1(t_L_array[t_L_array<200], *popt1), color = colors[1], label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
+ax.plot(t_L_array, func1(t_L_array, *p01), color = 'red', label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
+
+ax.plot(t_L_array, func3(t_L_array, *popt3), color = colors[0], linestyle=':', label='$\sim 1- \exp((-\Gamma_{in} + 1/T_{1})t_L)$')
+ax.plot(t_L_array, func2(t_L_array, *popt2), color = colors[0], linestyle='dashdot', label='$\sim \exp(-t_L/T_1)$')
 ax.set_xlabel(r'$t_L$ ($\mu$s)')
 ax.set_ylabel(r'$N_{blip}$')
+ax.legend()
+plt.tight_layout()
 
 fig_path = os.path.join(ex_data_dir, 'N_vs_tL.pdf')
 plt.savefig(fig_path)

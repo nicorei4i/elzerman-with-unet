@@ -1,3 +1,4 @@
+#%%
 # Import necessary libraries
 import numpy as np
 import os
@@ -13,13 +14,13 @@ from torch.utils.data import DataLoader
 from dataset import SimDataset, Noise, MinMaxScalerTransform
 from sklearn.preprocessing import MinMaxScaler
 import time
-from test_lib import get_snr, get_scores_aenc, save_scores, plot_aenc
+from test_lib import get_snr, get_scores_aenc, save_scores, plot_aenc, plot_schmitt, get_scores_schmitt
 
 def main():
     # Set up directory paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    trace_dir = os.path.join(current_dir, 'traces')
-    test_name = 'sim_elzerman_traces_test_g400'  
+    trace_dir = os.path.join(current_dir, 'sim_traces')
+    test_name = 'sim_elzerman_traces_test_100'  
 
     print(test_name)
 
@@ -70,12 +71,12 @@ def main():
     noise_sigs = np.linspace(0.1, 0.8, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
-        train_loader, val_loader, test_loader = get_loaders(s)
+        test_loader = get_loaders(s)
         with torch.no_grad():
             snr = get_snr(test_loader)
             model_dir = os.path.join(current_dir, 'schmitt_results')
-            plot_aenc(test_loader, model_dir, snr)
-            score = get_scores_aenc(test_loader)
+            plot_schmitt(test_loader, model_dir, snr)
+            score = get_scores_schmitt(test_loader)
             print('snr: ', snr)
             print('score: ', score)
             snrs.append(snr)
