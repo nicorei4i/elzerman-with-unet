@@ -25,10 +25,10 @@ def main():
 
     # Set up directory paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    trace_dir = os.path.join(current_dir, 'traces')
-    file_name = 'sim_elzerman_traces_train_g400'  
-    val_name = 'sim_elzerman_traces_val_g400'  
-    test_name = 'sim_elzerman_traces_test_g400'  
+    trace_dir = os.path.join(current_dir, 'sim_traces')
+    file_name = 'sim_elzerman_traces_train_1k'  
+    val_name = 'sim_elzerman_traces_val'  
+    test_name = 'sim_elzerman_traces_test_1k'  
 
     print(file_name)
     print(val_name)
@@ -183,6 +183,7 @@ def main():
             score = get_scores_aenc(model, test_loader)
             print('snr: ', snr)
             print('score: ', score)
+            print('')
             snrs.append(snr)
             precisions.append(score[0])
             recalls.append(score[1])

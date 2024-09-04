@@ -211,12 +211,12 @@ popt3, pcov3 = sc.optimize.curve_fit(func3, t_L_array[f3_mask], n_blip_array[f3_
 def func1(x, A, G_in, T1, offset):
     return A*(np.exp(-x/T1) - np.exp(-G_in*x)) + offset
 p01 = [popt2[0], popt3[1], popt2[1], 0]
-bounds01 = (0, [300, 2, 200, 100])
+bounds01 = (0, [300, 2, 200, 20])
 popt1, pcov1 = sc.optimize.curve_fit(func1, t_L_array[t_L_array<400], n_blip_array[t_L_array<400], bounds=bounds01)
 print(popt1)
 print(popt2)
 print(popt3)
-print(f'T1 = {popt3[2]:.3f} us, Gamma_in = {popt3[1]:.3f} MHz')
+print(f'T1 = {popt1[2]:.3f} us, Gamma_in = {popt1[1]:.3f} MHz')
 
 
 prop_cycle = plt.rcParams['axes.prop_cycle']
