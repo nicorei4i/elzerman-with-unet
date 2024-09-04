@@ -49,17 +49,11 @@ def main():
 
         # Create instances of Noise and MinMaxScalerTransform classes
         noise_transform = Noise(n_samples, T, s, interference_amps, interference_freqs)
-        test_scaler = MinMaxScalerTransform()
-
-        # Fit scalers using data from the HDF5 files
-        test_scaler.fit_from_hdf5(hdf5_file_path_test)
-        
 
         batch_size = 32  
         # Create instances of SimDataset class for training and validation datasets
         print('Creating datasets...')
-        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=noise_transform)
-        
+        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=False, noise_transform=noise_transform)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, persistent_workers=True)
         
         return test_loader
@@ -68,7 +62,7 @@ def main():
     precisions = []
     recalls = []
     snrs = []
-    noise_sigs = np.linspace(0.1, 0.8, 10)
+    noise_sigs = np.linspace(0.05, 0.2, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         test_loader = get_loaders(s)
@@ -79,6 +73,7 @@ def main():
             score = get_scores_schmitt(test_loader)
             print('snr: ', snr)
             print('score: ', score)
+            print('')
             snrs.append(snr)
             precisions.append(score[0])
             recalls.append(score[1])

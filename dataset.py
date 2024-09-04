@@ -13,7 +13,7 @@ class SimDataset(Dataset):
     """
     A custom dataset class for loading simulation data stored in an HDF5 file.
     """
-    def __init__(self, file_path, scale_transform=None, noise_transform=None, subtract_linear_background=False):
+    def __init__(self, file_path, scale_transform=None, noise_transform=None, subtract_linear_background=False, noise_before_scale=False):
         """
         Initialize the dataset with the path to the HDF5 file and an optional transform.
 
@@ -25,6 +25,7 @@ class SimDataset(Dataset):
         self.file_path = file_path  # Store the file path
         self.scale_transform = scale_transform  # Store the transform
         self.noise_transform = noise_transform
+        self.noise_before_scale = noise_before_scale
         
         file = h5py.File(file_path, 'r')  # Open the HDF5 file in read mode
         self.keys = list(file.keys())  # Get the list of keys (datasets) in the file
@@ -60,25 +61,45 @@ class SimDataset(Dataset):
         # file.close()  # Close the HDF5 file
         clean_trace = self.traces[self.keys[index]]
 
+        if self.noise_before_scale:
         
-        
-        if self.noise_transform:
-            noisy_trace = self.noise_transform(clean_trace)
-        else:
-            noisy_trace = clean_trace.copy()
-            #print('No noise transform! Data will be labeled to itself!')
+            if self.noise_transform:
+                noisy_trace = self.noise_transform(clean_trace)
+            else:
+                noisy_trace = clean_trace.copy()
+                #print('No noise transform! Data will be labeled to itself!')
 
-        if self.subtract_linear_background:
-            noisy_trace = subtract_lb(noisy_trace)
+            if self.subtract_linear_background:
+                noisy_trace = subtract_lb(noisy_trace)
+
+            if self.scale_transform:  # Apply the scale transform if it exists
+                #clean_trace = self.scale_transform(clean_trace)
+                noisy_trace = self.scale_transform(noisy_trace)
+            else:
+                clean_trace = clean_trace.reshape(1, -1)
+                noisy_trace = noisy_trace.reshape(1, -1)
+                #print(np.shape(noisy_trace))
+
+        else :
+            if self.subtract_linear_background:
+                noisy_trace = subtract_lb(noisy_trace)
+
+            if self.scale_transform:  # Apply the scale transform if it exists
+                clean_trace = self.scale_transform(clean_trace)
+                # noisy_trace = self.scale_transform(noisy_trace)
+            else:
+                clean_trace = clean_trace.reshape(1, -1)
+                # noisy_trace = noisy_trace.reshape(1, -1)
+                #print(np.shape(noisy_trace))
+
+            if self.noise_transform:
+                noisy_trace = self.noise_transform(clean_trace)
+            else:
+                noisy_trace = clean_trace.copy()
+                #print('No noise transform! Data will be labeled to itself!')
 
 
-        if self.scale_transform:  # Apply the scale transform if it exists
-            #clean_trace = self.scale_transform(clean_trace)
-            noisy_trace = self.scale_transform(noisy_trace)
-        else:
-            clean_trace = clean_trace.reshape(1, -1)
-            noisy_trace = noisy_trace.reshape(1, -1)
-            #print(np.shape(noisy_trace))
+
         return torch.tensor(noisy_trace, dtype=torch.float32), torch.tensor(clean_trace, dtype=torch.float32) # Convert the numpy array to a PyTorch tensor and return it
 
 def subtract_lb(noisy_trace):
@@ -229,7 +250,7 @@ class Noise(object):
 
 
 class MinMaxScalerTransform:
-    def __init__(self, feature_range=(0, 1)):
+    def __init__(self, feature_range=(0, 1), robust_scaler=False):
         """
         Initialize the MinMaxScalerTransform with a given feature range.
 
@@ -238,7 +259,11 @@ class MinMaxScalerTransform:
         """
         #self.scaler = MinMaxScaler(feature_range=feature_range)
         #self.scaler = StandardScaler()
-        self.scaler = RobustScaler()
+        if robust_scaler:
+            self.scaler = RobustScaler
+        else:
+            self.scaler = MinMaxScaler()
+
         
     def fit_data(self, data):
         """

@@ -18,7 +18,7 @@ from scipy.signal import find_peaks
 import pickle
 from pathlib import Path
 import time_resolved_CD_lib_08 as lib
-print('GPU available: ', torch.cuda.is_available())
+# print('GPU available: ', torch.cuda.is_available())
 
 # Set device to GPU if available, otherwise use CPU
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -333,7 +333,7 @@ def get_scores_schmitt(test_loader, start_read=start_read, end_read=end_read):
                 batch_y = batch_y.squeeze(1)
 
             prediction_class, thresh_lower, thresh_upper = schmitt_trigger(batch_x, full_output=True)           
-            print(f'lower: {thresh_lower}, upper: {thresh_upper}') 
+            # print(f'lower: {thresh_lower}, upper: {thresh_upper}') 
         
             for i, pred_trace in enumerate(prediction_class):                   
                 #selection = invert(pred_trace[start_read:end_read])
@@ -395,7 +395,7 @@ def schmitt_trigger(new_traces_array, full_output=False, thresh_lower = None, th
         b = -6/7
         n_bins = 150
 
-        start_params = [1e2, 0.95, 0.01, 1e4, 0, 0.01, 3] # start parameters for Gaussian fit, must be determined manually 
+        start_params = [1e3, 1, 0.01, 1e3, 0, 0.01, 3] # start parameters for Gaussian fit, must be determined manually 
         bounds_double_gaussian = ([0,0.8,0,-0.2,-1,0,0],[1e7,1.2, 1,1e7,0.2,1,100])
         
         # start_params = None
@@ -413,38 +413,41 @@ def schmitt_trigger(new_traces_array, full_output=False, thresh_lower = None, th
         '''
 
         params, cov = lib.fit_double_gaussian(bin_centers, hist_smoothed, start_params, bounds_double_gaussian)
-        print(params)
+        # print(params)
         
-        fig, ax = plt.subplots(1, 1)
-        ax.scatter(bin_centers,hist_smoothed, s=0.5)
+        # fig, ax = plt.subplots(1, 1)
+        # ax.scatter(bin_centers,hist_smoothed, s=0.5)
 
-        # ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params))
-        a1, m1, s1, a2, m2, s2, offset = start_params
-        # ax.plot(bin_centers, lib.double_gaussian(bin_centers, a1, m1, s1, a2, m2, s2, offset), color='red')
+        # ax.plot(bin_centers, lib.double_gaussian(bin_centers, *params), alpha=0.5)
+        # #ax.plot(bin_centers, lib.double_gaussian(bin_centers, *start_params), color='red', alpha=0.5)
         
-        ax.plot(bin_centers, lib.gaussian(bin_centers, *params[0:3]))
-        ax.plot(bin_centers, lib.gaussian(bin_centers, *params[3:6]))
+        # ax.plot(bin_centers, lib.gaussian(bin_centers, *params[0:3]), alpha=0.5)
+        # ax.plot(bin_centers, lib.gaussian(bin_centers, *params[3:6]), alpha=0.5)
         
-        ax.set_yscale('log')
-        ax.set_ylim(0.1, np.max(hist_smoothed))
+        # # ax.set_yscale('log')
+        # # ax.set_ylim(0.1, np.max(hist_smoothed))
 
         snr = lib.snr_calc(params)
         a = lib.det_a(snr, m, b)
 
-        # print(snr)
-        # print(a)
+        # # print(snr)
+        # # print(a)
         # ax.set_xlim(min(bin_centers),max(bin_centers))
-        # ax.xlabel("Detector signal (mV)")
-        # ax.ylabel(r"Counts $(10^5)$")
-        # ax.title("SNR = {}".format(round(snr,2)))
-        plt.savefig('a.pdf')
-        #plt.show(block=True)
+        # ax.set_xlabel("Detector signal (mV)")
+        # ax.set_ylabel(r"Counts $(10^5)$")
+        # ax.set_title("SNR = {}".format(round(snr,2)))
+       
+        # #plt.show(block=True)
         '''
         Detection algorithm. 
         In case of corrected frequencies, traces_array needs to be corrected first.
         '''
-        thresh_lower = params[1]+a*params[2]
-        thresh_upper = params[4]-a*params[5]
+        thresh_upper = params[1]-a*params[2]
+        thresh_lower = params[4]+a*params[5]
+        
+        # ax.axvline(thresh_lower, color='red', linestyle='--')
+        # ax.axvline(thresh_upper, color='red', linestyle='--')
+        # plt.savefig('a.pdf')
 
     time_list = np.arange(0, new_traces_array.shape[-1])
     rect_traces = np.array([lib.detect_events_vec(time_list, trace, thresh_upper, thresh_lower)[-1] for trace in new_traces_array])

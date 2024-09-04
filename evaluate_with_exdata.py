@@ -194,22 +194,29 @@ t_L_array = t_L_array[ind]
 n_blip_array = n_blip_array[ind]
 
 
-def func1(x, A, G_in, T1, offset):
-    return A*(np.exp(-x/T1) - np.exp(-G_in*x)) + offset
-p01 = [200, 0.04, 90, 15]
-popt1, pcov1 = sc.optimize.curve_fit(func1, t_L_array[t_L_array<200], n_blip_array[t_L_array<200])
-print(popt1)
 
 def func2(x, A, T1, offset): 
     return A*(np.exp(-x/T1)) + offset
+p02 = [200, 90, 0]
+f2_mask = (t_L_array>50) & (t_L_array<400)
+popt2, pcov2 = sc.optimize.curve_fit(func2, t_L_array[f2_mask], n_blip_array[f2_mask], p0=p02)
 
-popt2, pcov2 = sc.optimize.curve_fit(func2, t_L_array[t_L_array>100], n_blip_array[t_L_array>100])
 
 def func3(x, A, G_in, T1, offset):
     return A*(1-np.exp((-G_in + 1/T1)*x)) + offset
+p03 = [popt2[0], 0.02, popt2[1], 0]
+f3_mask = t_L_array<50
+popt3, pcov3 = sc.optimize.curve_fit(func3, t_L_array[f3_mask], n_blip_array[f3_mask])
 
-popt3, pcov3 = sc.optimize.curve_fit(func1, t_L_array[t_L_array>100], n_blip_array[t_L_array>100])
-
+def func1(x, A, G_in, T1, offset):
+    return A*(np.exp(-x/T1) - np.exp(-G_in*x)) + offset
+p01 = [popt2[0], popt3[1], popt2[1], 0]
+bounds01 = (0, [300, 2, 200, 100])
+popt1, pcov1 = sc.optimize.curve_fit(func1, t_L_array[t_L_array<400], n_blip_array[t_L_array<400], bounds=bounds01)
+print(popt1)
+print(popt2)
+print(popt3)
+print(f'T1 = {popt3[2]:.3f} us, Gamma_in = {popt3[1]:.3f} MHz')
 
 
 prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -217,8 +224,8 @@ colors = prop_cycle.by_key()['color']
 fig, ax = plt.subplots(1, 1)
 ax.scatter(t_L_array, n_blip_array, marker='.', color = colors[1], alpha=0.6, label='Denoised experimental data')
 #ax.plot(t_L_array,   np.exp(-lambda_flip * t_L_array), color='r', linestyle='dashdot')
-# ax.plot(t_L_array[t_L_array<200], func1(t_L_array[t_L_array<200], *popt1), color = colors[1], label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
-ax.plot(t_L_array, func1(t_L_array, *p01), color = 'red', label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
+ax.plot(t_L_array, func1(t_L_array, *popt1), color = colors[1], label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
+# ax.plot(t_L_array, func1(t_L_array, *p01), color = 'red', label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
 
 ax.plot(t_L_array, func3(t_L_array, *popt3), color = colors[0], linestyle=':', label='$\sim 1- \exp((-\Gamma_{in} + 1/T_{1})t_L)$')
 ax.plot(t_L_array, func2(t_L_array, *popt2), color = colors[0], linestyle='dashdot', label='$\sim \exp(-t_L/T_1)$')
