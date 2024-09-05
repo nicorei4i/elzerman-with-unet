@@ -15,7 +15,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 from unet_model import UNet
 from aenc_model import Conv1DAutoencoder
 from torch.utils.data import DataLoader
-from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise, subtract_lb
+from dataset import SimDataset, Noise, MinMaxScalerTransform, MeasuredNoise, subtract_lb, get_real_noise_traces
 from HDF5Data import HDF5Data
 
 import time
@@ -46,31 +46,15 @@ def main():
     real_data_dir = os.path.join(current_dir, 'real_data')
     # file_name = 'sim_read_traces_train_20k_pure'  
     # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_10k'  
+    file_name = 'sim_read_traces_val'  
     val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     # test_whole_name = 'sliced_traces_whole' 
     # test_trace_name = 'test_trace'
     test_trace_name = "494_2_3T_elzermann_testtrace_at_b'repitition'_771.000_b'Pulse_for_Qdac - Tburst'_554.500"
-    noise_name = '545_1.9T_pg13_vs_tc'
 
-    noise_path = os.path.join(real_data_dir, '{}.hdf5'.format(noise_name))
-    hdf5Data_noise = HDF5Data(wdir=trace_dir)
-    hdf5Data_noise.set_path(noise_path)
-
-    hdf5Data_noise.set_filename()
-    hdf5Data_noise.set_traces()
-    hdf5Data_noise.set_measure_data_and_axis()
-    
-    tc = np.array(hdf5Data_noise.measure_axis[1]).T
-
-
-    hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
-    noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
-    mask = np.logical_and(8e-6<tc, tc<12e-6)
-    noise_traces = noise_traces[mask]
-    print(f'Noise traces shape:{noise_traces.shape}')
+    noise_traces = get_real_noise_traces()
 
     train_noise_traces, val_noise_traces = noise_traces[:-5, ::], noise_traces[-5:, ::]
 
@@ -117,8 +101,8 @@ def main():
     T = 0.006  
     n_samples = 8192
 
-    train_scaler = MinMaxScalerTransform()
-    test_scaler = MinMaxScalerTransform()
+    train_scaler = MinMaxScalerTransform(robust_scaler=True)
+    test_scaler = MinMaxScalerTransform(robust_scaler=True)
     noise_transform_train = MeasuredNoise(noise_traces=train_noise_traces)
     noise_transform_val = MeasuredNoise(noise_traces=val_noise_traces)
     
@@ -149,9 +133,9 @@ def main():
         batch_size = 32
         # Create instances of SimDataset class for training and validation datasets
         print('Creating datasets...')
-        dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform_train)  
-        val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform_val)
-        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None, subtract_linear_background=True)
+        dataset = SimDataset(hdf5_file_path, scale_transform=train_scaler, noise_transform=noise_transform_train, noise_before_scale=True)  
+        val_dataset = SimDataset(hdf5_file_path_val, scale_transform=train_scaler, noise_transform=noise_transform_val, noise_before_scale=True)
+        test_dataset = SimDataset(hdf5_file_path_test, scale_transform=test_scaler, noise_transform=None, subtract_linear_background=True, noise_before_scale=True)
         
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, persistent_workers=True, pin_memory=True)
@@ -281,7 +265,7 @@ def main():
 
         x = x.cpu().numpy()
         y = y.cpu().numpy()
-        temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train)  
+        temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train, noise_before_scale=True)  
         temp_loader = DataLoader(temp_dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         snr = get_snr(temp_loader)
         for i in range(5):

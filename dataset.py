@@ -1,3 +1,4 @@
+import os
 import h5py
 import numpy as np
 import random
@@ -7,6 +8,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.optimize import curve_fit
+from HDF5Data import HDF5Data
 mpl.use('Agg')
 
 class SimDataset(Dataset):
@@ -61,44 +63,22 @@ class SimDataset(Dataset):
         # file.close()  # Close the HDF5 file
         clean_trace = self.traces[self.keys[index]]
 
-        if self.noise_before_scale:
-        
-            if self.noise_transform:
-                noisy_trace = self.noise_transform(clean_trace)
-            else:
-                noisy_trace = clean_trace.copy()
-                #print('No noise transform! Data will be labeled to itself!')
+        if self.noise_transform:
+            noisy_trace = self.noise_transform(clean_trace)
+        else:
+            noisy_trace = clean_trace.copy()
+            #print('No noise transform! Data will be labeled to itself!')
 
-            if self.subtract_linear_background:
-                noisy_trace = subtract_lb(noisy_trace)
+        if self.subtract_linear_background:
+            noisy_trace = subtract_lb(noisy_trace)
 
-            if self.scale_transform:  # Apply the scale transform if it exists
-                #clean_trace = self.scale_transform(clean_trace)
-                noisy_trace = self.scale_transform(noisy_trace)
-            else:
-                clean_trace = clean_trace.reshape(1, -1)
-                noisy_trace = noisy_trace.reshape(1, -1)
-                #print(np.shape(noisy_trace))
-
-        else :
-            if self.subtract_linear_background:
-                noisy_trace = subtract_lb(noisy_trace)
-
-            if self.scale_transform:  # Apply the scale transform if it exists
-                clean_trace = self.scale_transform(clean_trace)
-                # noisy_trace = self.scale_transform(noisy_trace)
-            else:
-                clean_trace = clean_trace.reshape(1, -1)
-                # noisy_trace = noisy_trace.reshape(1, -1)
-                #print(np.shape(noisy_trace))
-
-            if self.noise_transform:
-                noisy_trace = self.noise_transform(clean_trace)
-            else:
-                noisy_trace = clean_trace.copy()
-                #print('No noise transform! Data will be labeled to itself!')
-
-
+        if self.scale_transform:  # Apply the scale transform if it exists
+            #clean_trace = self.scale_transform(clean_trace)
+            noisy_trace = self.scale_transform(noisy_trace)
+        else:
+            clean_trace = clean_trace.reshape(1, -1)
+            noisy_trace = noisy_trace.reshape(1, -1)
+       
 
         return torch.tensor(noisy_trace, dtype=torch.float32), torch.tensor(clean_trace, dtype=torch.float32) # Convert the numpy array to a PyTorch tensor and return it
 
@@ -112,6 +92,35 @@ def subtract_lb(noisy_trace):
     lbg = linear_function(time, *params)
     noisy_trace = noisy_trace - lbg
     return noisy_trace
+
+
+def get_real_noise_traces():
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    trace_dir = os.path.join(current_dir, 'sim_traces')
+    real_data_dir = os.path.join(current_dir, 'real_data')
+    
+    noise_name = '545_1.9T_pg13_vs_tc'
+
+    noise_path = os.path.join(real_data_dir, '{}.hdf5'.format(noise_name))
+    hdf5Data_noise = HDF5Data(wdir=trace_dir)
+    hdf5Data_noise.set_path(noise_path)
+
+    hdf5Data_noise.set_filename()
+    hdf5Data_noise.set_traces()
+    hdf5Data_noise.set_measure_data_and_axis()
+    
+    tc = np.array(hdf5Data_noise.measure_axis[1]).T
+
+
+    hdf5Data_noise.set_traces_dt() # self.data.set_traces_dt()
+    noise_traces = np.array(hdf5Data_noise.traces) #self.data.traces
+    mask = np.logical_and(8e-6<tc, tc<12e-6)
+    noise_traces = noise_traces[mask]
+    print(f'Noise traces shape:{noise_traces.shape}')
+
+    return noise_traces
+
 
 
 class MeasuredNoise(object):
@@ -257,13 +266,12 @@ class MinMaxScalerTransform:
         Parameters:
         feature_range (tuple): Desired range of transformed data.
         """
-        #self.scaler = MinMaxScaler(feature_range=feature_range)
-        #self.scaler = StandardScaler()
+        
         if robust_scaler:
-            self.scaler = RobustScaler
+            self.scaler = RobustScaler()
         else:
-            self.scaler = MinMaxScaler()
-
+            self.scaler = MinMaxScaler(feature_range=feature_range)
+        
         
     def fit_data(self, data):
         """

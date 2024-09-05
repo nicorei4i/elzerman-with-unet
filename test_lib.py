@@ -249,7 +249,9 @@ def get_scores_unet(model, test_loader, start_read=start_read, end_read=end_read
                 #selection = [prob[start_read:end_read]< 0.1]
                 selection = [pred_trace[start_read:end_read] == 0]
                 selection = np.array(selection)
-                current_mask = invert(batch_y[i, 0, :][start_read:end_read])
+                if len(batch_y.shape) == 3:
+                    batch_y = batch_y.squeeze(1)
+                current_mask = invert(batch_y[i, :][start_read:end_read])
                 
                 if selection.any() and current_mask.any():
                     ntp += 1
@@ -492,4 +494,4 @@ def save_scores(snrs, precisions, recalls, cms, pickle_name):
     with open(pickle_path, 'wb') as f:
                 pickle.dump(scores, f)
 
-
+                
