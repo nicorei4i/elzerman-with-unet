@@ -1,0 +1,3 @@
+Simulation time per trace: 0.003s
+
+

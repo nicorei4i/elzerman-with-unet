@@ -17,7 +17,7 @@ import time
 from test_lib import get_snr, get_scores_unet, save_scores, plot_unet
 
 def main():
-    real_noise_switch = False
+    real_noise_switch = True
     if real_noise_switch:
         print('Using real noise')
     else:
@@ -39,9 +39,9 @@ def main():
     current_dir = os.getcwd()  
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
-    file_name = 'sim_elzerman_traces_val'  
+    file_name = 'sim_elzerman_traces_train_10k'  
     val_name = 'sim_elzerman_traces_val'  
-    test_name = 'sim_elzerman_traces_test_1k'  
+    test_name = 'sim_elzerman_traces_test_10k'  
 
     print(file_name)
     print(val_name)
@@ -197,9 +197,9 @@ def main():
     recalls = []
     snrs = []
     if real_noise_switch:
-        noise_sigs = np.linspace(0.5, 5, 2)
+        noise_sigs = np.linspace(0.5, 5, 10)
     else: 
-        noise_sigs = np.linspace(0.1, 0.8, 2)
+        noise_sigs = np.linspace(0.1, 0.8, 10)
 
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 

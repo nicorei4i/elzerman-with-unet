@@ -1,0 +1,23 @@
+Using real noise
+sim_elzerman_traces_test_10k
+(10000, 8192)
+noise sigs:  [0.5 5. ]
+Noise Amp:  0.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 14.731121063232422s
+snr:  16.66217803955078
+score:  (0.9938891313836753, 0.9995610184372257, array([[4554,   28],
+       [   2, 5416]]))
+
+Noise Amp:  5.0
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.445695638656616s
+snr:  -2.965559661388397
+score:  (0.45564556455645566, 1.0, array([[4556, 5443],
+       [   0,    1]]))
+
+Total duration: 78.47234010696411s

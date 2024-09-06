@@ -1,0 +1,15 @@
+Using real noise
+GPU available:  True
+cuda
+sim_elzerman_traces_train_10k
+sim_elzerman_traces_val
+sim_elzerman_traces_test_1k
+(10000, 8192)
+(100, 8192)
+(1000, 8192)
+noise sigs:  [0.5 1.  1.5 2.  2.5 3.  3.5 4.  4.5 5. ]
+Noise Amp:  0.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+20086
+Start training...

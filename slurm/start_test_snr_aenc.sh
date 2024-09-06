@@ -1,10 +1,9 @@
 #!/bin/bash
 
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=8GB
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="unet Testing"
-#SBATCH --time=0-00:50:00
+#SBATCH --job-name="Test snr aenc"
+#SBATCH --time=0-01:30:00
 #SBATCH --begin=now
 #SBATCH --signal=TERM@120
 #SBATCH --output=/home/md334167/elzerman-with-unet/logs/%j_%n_%x.txt
@@ -31,4 +30,4 @@ unset __conda_setup
 conda activate DL
 
 # run the training
-python -u /home/md334167/elzerman-with-unet/unet_test.py
+python -u /home/md334167/elzerman-with-unet/test_snr_aenc.py
