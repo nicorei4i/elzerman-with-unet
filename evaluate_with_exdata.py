@@ -132,7 +132,7 @@ print('Loading model')
 model = UNet()
 
 model_dir = os.path.join(current_dir, 'unet_params_ex')
-state_dict_name = 'model_weights'  
+state_dict_name = 'model_weights_10k'  
 state_dict_path = os.path.join(model_dir, '{}.pth'.format(state_dict_name))  
 model.load_state_dict(torch.load(state_dict_path, weights_only=True, map_location=torch.device('cpu')))  
 model.eval()
@@ -204,9 +204,10 @@ popt2, pcov2 = sc.optimize.curve_fit(func2, t_L_array[f2_mask], n_blip_array[f2_
 
 def func3(x, A, G_in, T1, offset):
     return A*(1-np.exp((-G_in + 1/T1)*x)) + offset
-p03 = [popt2[0], 0.02, popt2[1], 0]
-f3_mask = t_L_array<50
-popt3, pcov3 = sc.optimize.curve_fit(func3, t_L_array[f3_mask], n_blip_array[f3_mask])
+p03 = [popt2[0], 0.02, popt2[1], 60]
+f3_mask = t_L_array<40
+bounds03 = (0, [np.inf, 0.04, 200, 20])
+popt3, pcov3 = sc.optimize.curve_fit(func3, t_L_array[f3_mask], n_blip_array[f3_mask], bounds=bounds03)
 
 def func1(x, A, G_in, T1, offset):
     return A*(np.exp(-x/T1) - np.exp(-G_in*x)) + offset
@@ -228,15 +229,20 @@ ax.plot(t_L_array, func1(t_L_array, *popt1), color = colors[1], label='$\sim \ex
 # ax.plot(t_L_array, func1(t_L_array, *p01), color = 'red', label='$\sim \exp(-t_L/T_1)-\exp(-\Gamma_{in}t_L)$')
 
 ax.plot(t_L_array, func3(t_L_array, *popt3), color = colors[0], linestyle=':', label='$\sim 1- \exp((-\Gamma_{in} + 1/T_{1})t_L)$')
+# ax.plot(t_L_array[f3_mask], func3(t_L_array[f3_mask], *p03), color = colors[0], linestyle=':', label='$\sim 1- \exp((-\Gamma_{in} + 1/T_{1})t_L)$')
+
 ax.plot(t_L_array, func2(t_L_array, *popt2), color = colors[0], linestyle='dashdot', label='$\sim \exp(-t_L/T_1)$')
+
 ax.set_xlabel(r'$t_L$ ($\mu$s)')
 ax.set_ylabel(r'$N_{blip}$')
+ax.set_ylim(0, None)
 ax.legend()
 plt.tight_layout()
 
 fig_path = os.path.join(ex_data_dir, 'N_vs_tL.pdf')
 plt.savefig(fig_path)
-
+fig_path = os.path.join(ex_data_dir, 'N_vs_tL.png')
+plt.savefig(fig_path)
 
 
 
