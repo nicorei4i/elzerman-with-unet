@@ -105,7 +105,7 @@ file_name_unet = 'unet_scores_real_noise_2'
 file_name_aenc = 'aenc_scores_real_noise_2'
 file_name_schmitt = 'schmitt_scores_real_noise_2'
 # plot_comparison(file_name_unet=file_name_unet, file_name_aenc=file_name_aenc,file_name_schmitt=file_name_schmitt, title=r'$\Gamma_{in} = 3500$ Hz, $\Gamma_{out} = 4200$ Hz Real Noise',figname='comparison_mid.svg')
-plot_comparison(file_name_unet=file_name_unet, file_name_aenc=file_name_aenc,file_name_schmitt=file_name_schmitt, title=r'$\Gamma_{in} = 3500$ Hz, $\Gamma_{out} = 4200$ Hz',figname='comparison_mid.pdf')
+plot_comparison(file_name_unet=file_name_unet, file_name_aenc=file_name_aenc,file_name_schmitt=file_name_schmitt, title=r'$\Gamma_{in} = 3500$ Hz, $\Gamma_{out} = 4200$ Hz',figname='comparison_real_noise.pdf')
 
 
 #%%
