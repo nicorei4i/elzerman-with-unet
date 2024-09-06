@@ -1,0 +1,40 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+Traceback (most recent call last):
+  File "/home/md334167/elzerman-with-unet/test_snr_aenc.py", line 249, in <module>
+    main()
+  File "/home/md334167/elzerman-with-unet/test_snr_aenc.py", line 218, in main
+    plot_aenc(model, test_loader, model_dir, snr)
+  File "/rwthfs/rz/cluster/home/md334167/elzerman-with-unet/test_lib.py", line 154, in plot_aenc
+    plt.savefig(os.path.join(model_dir, f'aenc_{snr}_{i}.pdf'))  # Save each figure
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/pyplot.py", line 1228, in savefig
+    res = fig.savefig(*args, **kwargs)  # type: ignore[func-returns-value]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/figure.py", line 3395, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/backend_bases.py", line 2204, in print_figure
+    result = print_method(
+             ^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/backend_bases.py", line 2054, in <lambda>
+    print_method = functools.wraps(meth)(lambda *args, **kwargs: meth(
+                                                                 ^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/backends/backend_pdf.py", line 2792, in print_pdf
+    file = PdfFile(filename, metadata=metadata)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/backends/backend_pdf.py", line 688, in __init__
+    fh, opened = cbook.to_filehandle(filename, "wb", return_opened=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/miniconda3/envs/DL/lib/python3.11/site-packages/matplotlib/cbook.py", line 483, in to_filehandle
+    fh = open(fname, flag, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/md334167/elzerman-with-unet/aenc_weights_real_noise/aenc_16_72_0.pdf'

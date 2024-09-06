@@ -86,9 +86,9 @@ def main():
     recalls = []
     snrs = []
     if real_noise_switch:
-        noise_sigs = np.linspace(0.5, 5, 2)
+        noise_sigs = np.linspace(0.5, 5, 10)
     else: 
-        noise_sigs = np.linspace(0.1, 0.8, 2)
+        noise_sigs = np.linspace(0.1, 0.8, 10)
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 
         if real_noise_switch:

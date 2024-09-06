@@ -1,0 +1,24 @@
+[INFO] Module GCC/9.4.0 loaded.
+
+Inactive Modules:
+  1) UCX/1.17.0     2) numactl/2.0.16
+
+The following have been reloaded with a version change:
+  1) GCCcore/.11.3.0 => GCCcore/.9.4.0     3) zlib/1.2.13 => zlib/1.2.11
+  2) binutils/2.38 => binutils/2.36.1
+
+[INFO] Module CUDA/11.8.0 loaded.
+[INFO] Module cuDNN/8.6.0.163-CUDA-11.8.0 loaded.
+Traceback (most recent call last):
+  File "/home/md334167/elzerman-with-unet/test_snr_unet.py", line 248, in <module>
+    main()
+  File "/home/md334167/elzerman-with-unet/test_snr_unet.py", line 207, in main
+    train_loader, val_loader, test_loader = get_loaders_realnoise(s)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/md334167/elzerman-with-unet/test_snr_unet.py", line 105, in get_loaders_realnoise
+    noise_traces = get_real_noise_traces()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/rwthfs/rz/cluster/home/md334167/elzerman-with-unet/dataset.py", line 113, in get_real_noise_traces
+    tc = np.array(hdf5Data_noise.measure_axis[1]).T
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+TypeError: 'NoneType' object is not subscriptable

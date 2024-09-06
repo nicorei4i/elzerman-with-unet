@@ -276,7 +276,7 @@ def get_scores_unet(model, test_loader, start_read=start_read, end_read=end_read
         #f1 = 2 * precision * recall / (precision + recall)
         return precision, recall, cm 
     
-def get_scores_aenc(model, test_loader):
+def get_scores_aenc(model, test_loader, start_read=start_read, end_read=end_read):
     # Initialize confusion matrix components
     nfn, nfp, ntn, ntp = 0, 0, 0, 0
     # Validate the model

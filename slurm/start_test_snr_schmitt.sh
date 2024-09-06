@@ -1,9 +1,8 @@
 #!/bin/bash
 
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=8GB
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="Elzerman Training aenc"
+#SBATCH --job-name="Test snr schmitt"
 #SBATCH --time=0-01:30:00
 #SBATCH --begin=now
 #SBATCH --signal=TERM@120
@@ -31,4 +30,4 @@ unset __conda_setup
 conda activate DL
 
 # run the training
-python -u /home/md334167/elzerman-with-unet/aenc_train.py
+python -u /home/md334167/elzerman-with-unet/test_snr_schmitt.py

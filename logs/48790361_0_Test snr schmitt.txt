@@ -1,0 +1,95 @@
+Using real noise
+sim_elzerman_traces_test_10k
+(10000, 8192)
+noise sigs:  [0.5 1.  1.5 2.  2.5 3.  3.5 4.  4.5 5. ]
+Noise Amp:  0.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 14.487454414367676s
+snr:  16.91463351249695
+score:  (0.9945426762715565, 1.0, array([[4556,   25],
+       [   0, 5419]]))
+
+Noise Amp:  1.0
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 14.672064542770386s
+snr:  11.086680889129639
+score:  (0.606970509383378, 0.9938542581211589, array([[4528, 2932],
+       [  28, 2512]]))
+
+Noise Amp:  1.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.18100118637085s
+snr:  7.159172296524048
+score:  (0.48063492063492064, 0.9969271290605795, array([[4542, 4908],
+       [  14,  536]]))
+
+Noise Amp:  2.0
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.194026708602905s
+snr:  4.682977199554443
+score:  (0.4609066017645269, 0.997585601404741, array([[4545, 5316],
+       [  11,  128]]))
+
+Noise Amp:  2.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.476340770721436s
+snr:  2.764345705509186
+score:  (0.4581275823843596, 0.9978050921861282, array([[4546, 5377],
+       [  10,   67]]))
+
+Noise Amp:  3.0
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.770309209823608s
+snr:  1.4544777572154999
+score:  (0.4571485984125389, 0.9986830553116769, array([[4550, 5403],
+       [   6,   41]]))
+
+Noise Amp:  3.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 16.41217064857483s
+snr:  0.13908624649047852
+score:  (0.4560384538353695, 0.9995610184372257, array([[4554, 5432],
+       [   2,   12]]))
+
+Noise Amp:  4.0
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.766995668411255s
+snr:  -1.0727448761463165
+score:  (0.4556, 1.0, array([[4556, 5444],
+       [   0,    0]]))
+
+Noise Amp:  4.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.92686676979065s
+snr:  -1.930006891489029
+score:  (0.4556, 1.0, array([[4556, 5444],
+       [   0,    0]]))
+
+Noise Amp:  5.0
+Noise traces shape:(81, 100000)
+Creating datasets...
+Plotting the results...
+Time for scoring: 15.202938556671143s
+snr:  -3.329063653945923
+score:  (0.4556, 1.0, array([[4556, 5444],
+       [   0,    0]]))
+
+Total duration: 360.0434489250183s

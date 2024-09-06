@@ -507,10 +507,13 @@ def main():
     
     #save_read_traces('sim_elzerman_traces_train_1k', 1000)
     
+    save_elzerman_traces('sim_elzerman_traces_train_1k', 1000)
+    save_elzerman_traces('sim_elzerman_traces_train_10k', 10000)
+    
+    save_elzerman_traces('sim_elzerman_traces_test_1k', 1000)
     save_elzerman_traces('sim_elzerman_traces_test_10k', 10000)
-    # save_elzerman_traces('sim_elzerman_traces_test_1k', 1000)
-    # save_elzerman_traces('sim_elzerman_traces_train_1k', 1000)
-    # save_elzerman_traces('sim_elzerman_traces_val', 100)
+    
+    save_elzerman_traces('sim_elzerman_traces_val', 100)
     
     
 
