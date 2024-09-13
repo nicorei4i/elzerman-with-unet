@@ -5,7 +5,18 @@ import numpy as np
 import os 
 import pickle
 
+plt.rcParams['font.size'] = 20.0
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = 'Arial'
+plt.rcParams['font.weight'] = 'bold'
+plt.rcParams['axes.labelsize'] = 'medium'
+plt.rcParams['axes.labelweight'] = 'bold'
+plt.rcParams['axes.linewidth'] = 1.2
+plt.rcParams['axes.titleweight'] = 'bold'
 
+
+
+plt.rcParams['lines.linewidth'] = 2.0
 
 def plot_comparison(file_name_unet, file_name_aenc, file_name_schmitt=None, title='Performance comparison of the models', figname='comp_fig'):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +52,7 @@ def plot_comparison(file_name_unet, file_name_aenc, file_name_schmitt=None, titl
         rec_schmitt = scores_schmitt['recall']
         
 
-    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(6, 8))
+    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(9, 12))
 
     if file_name_schmitt is None:
 
@@ -76,7 +87,7 @@ def plot_comparison(file_name_unet, file_name_aenc, file_name_schmitt=None, titl
     ax[2].set_title('Autoencoder')
     ax[2].set_xlabel('snr in dB')
     ax[2].set_ylabel('score')
-    fig.suptitle(title)
+    fig.suptitle(title, fontweight='bold')
     fig.tight_layout()
     plt.savefig(figname, format='svg', )
 
