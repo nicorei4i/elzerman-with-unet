@@ -54,10 +54,10 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
     real_data_dir = os.path.join(current_dir, 'real_data')
-    file_name = 'sim_read_traces_val'  
-    val_name = 'sim_read_traces_val'  
-    # file_name = 'sim_read_traces_train_10k'  
+    # file_name = 'sim_read_traces_val'  
     # val_name = 'sim_read_traces_val'  
+    file_name = 'sim_read_traces_train_10k'  
+    val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     # test_whole_name = 'sliced_traces_whole' 
@@ -172,7 +172,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 1
+        num_epochs = 25
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -279,16 +279,16 @@ def main():
         temp_loader = DataLoader(temp_dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         snr = get_snr(temp_loader)
         for i in range(32):
-            fig, axs = plt.subplots(4, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
+            fig, axs = plt.subplots(4, 1, figsize=(20, 15), sharex=True)  # Create a figure with 4 subplots
             fig.suptitle(f'Validation Trace (snr = {snr:.2f}dB)', fontweight='bold')
-            axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+            axs[1].plot(x[i].reshape(-1), label='Noisy')
             axs[1].tick_params(labelbottom=False)
-            axs[2].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
+            axs[2].plot(prediction_class[i], label='Denoised')
             axs[2].set_ylim(-0.1, 1.1)
             axs[2].tick_params(labelbottom=False)
-            axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+            axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$')
             axs[3].set_ylim(-0.1, 1.1)
-            axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
+            axs[0].plot(y[i].reshape(-1), label='Clean')
             axs[0].set_ylim(-0.1, 1.1)
             axs[0].tick_params(labelbottom=False)
 
@@ -323,17 +323,17 @@ def main():
         for i in range(50):
             fig, axs = plt.subplots(3, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
             fig.suptitle('Test Trace', fontweight='bold')
-            axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+            axs[0].plot(x[i].reshape(-1), label='Noisy')
             axs[0].tick_params(labelbottom=False)
-            axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
+            axs[1].plot(prediction_class[i], label='Denoised')
             axs[1].tick_params(labelbottom=False)
             axs[1].set_ylim(-0.1, 1.1)
-            axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+            axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$')
             axs[2].set_ylim(-0.1, 1.1)
             
             axs[0].set_ylabel('Amplitude (a.u.)')
             axs[1].set_ylabel('Occupation')
-            axs[2].set_ylabel('Occupation Probability')
+            axs[2].set_ylabel('Probability')
             axs[2].set_xlabel('Index')
             
 
@@ -356,14 +356,14 @@ def main():
 
         fig, axs = plt.subplots(3, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
         fig.suptitle('Test Trace', fontweight='bold')
-        axs[0].plot(x.reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
+        axs[0].plot(x.reshape(-1), label='Noisy')
         axs[0].tick_params(labelbottom=False)
-        axs[1].plot(prediction_class[0], label='Denoised', color='mediumblue', linewidth=0.9)
+        axs[1].plot(prediction_class[0], label='Denoised')
         axs[1].tick_params(labelbottom=False)
-        axs[2].plot(decoded_test_data[0, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[2].plot(decoded_test_data[0, 1, :], label='$p(1)$')
         axs[0].set_ylabel('Amplitude (a.u.)')
         axs[1].set_ylabel('Occupation')
-        axs[2].set_ylabel('Occupation Probability')
+        axs[2].set_ylabel('Probability')
         axs[2].set_xlabel('Index')
         for ax in axs:
             ax.legend()

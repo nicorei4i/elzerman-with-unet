@@ -1,0 +1,23 @@
+Using simulated noise
+GPU available:  True
+cuda
+sim_elzerman_traces_train_10k
+sim_elzerman_traces_val
+sim_elzerman_traces_test_10k
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+noise sigs:  [0.6 0.7 0.8]
+Noise Sigma:  0.6
+Creating datasets...
+Start training...
+20769
+Epoch [1/25], Train Loss: 0.556921, Validation Loss: 0.551570, lr = 0.0100, duration = 50.6419
+Epoch [2/25], Train Loss: 0.549867, Validation Loss: 0.547694, lr = 0.0096, duration = 42.8278
+Epoch [3/25], Train Loss: 0.551260, Validation Loss: 0.550125, lr = 0.0093, duration = 42.6931
+Epoch [4/25], Train Loss: 0.548982, Validation Loss: 0.544470, lr = 0.0089, duration = 42.7348
+Epoch [5/25], Train Loss: 0.546570, Validation Loss: 0.543920, lr = 0.0086, duration = 42.7414
+Epoch [6/25], Train Loss: 0.548234, Validation Loss: 0.554745, lr = 0.0082, duration = 42.6981
+Epoch [7/25], Train Loss: 0.547479, Validation Loss: 0.553081, lr = 0.0078, duration = 42.7004
+Epoch [8/25], Train Loss: 0.549053, Validation Loss: 0.529198, lr = 0.0075, duration = 42.7196
+Epoch [9/25], Train Loss: 0.547315, Validation Loss: 0.529048, lr = 0.0071, duration = 42.7307

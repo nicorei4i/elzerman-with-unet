@@ -1,0 +1,17 @@
+Using real noise
+GPU available:  True
+cuda
+sim_elzerman_traces_train_10k
+sim_elzerman_traces_val
+sim_elzerman_traces_test_10k
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+noise sigs:  [1.5 2.  2.5]
+Noise Amp:  1.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+16582
+Start training...
+Epoch [1/25], Train Loss: 0.250828, Validation Loss: 0.190299, lr = 0.01, duration = 21.0632
+Epoch [2/25], Train Loss: 0.166918, Validation Loss: 0.183232, lr = 0.00964, duration = 13.5240

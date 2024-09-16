@@ -20,7 +20,6 @@ import scipy as sc
 
 
 print('GPU available: ', torch.cuda.is_available())
-
 # Set device to GPU if available, else CPUs
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 if device == torch.device('cuda'):
@@ -28,6 +27,7 @@ if device == torch.device('cuda'):
 else: 
     num_workers = 1
     mpl.use('Qt5Agg')
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 

@@ -1,0 +1,27 @@
+Using real noise
+GPU available:  True
+cuda
+sim_elzerman_traces_train_10k
+sim_elzerman_traces_val
+sim_elzerman_traces_test_10k
+(10000, 8192)
+(100, 8192)
+(10000, 8192)
+noise sigs:  [0.5 1.  1.5 2.  2.5 3.  3.5 4.  4.5 5. ]
+Noise Amp:  0.5
+Noise traces shape:(81, 100000)
+Creating datasets...
+20086
+Start training...
+Epoch [1/25], Train Loss: 0.103846, Validation Loss: 0.015284, lr = 0.01, duration = 38.4022
+Epoch [2/25], Train Loss: 0.009575, Validation Loss: 0.006194, lr = 0.00964, duration = 13.4276
+Epoch [3/25], Train Loss: 0.004698, Validation Loss: 0.003630, lr = 0.00928, duration = 13.2990
+Epoch [4/25], Train Loss: 0.002964, Validation Loss: 0.002531, lr = 0.008919999999999999, duration = 13.2642
+Epoch [5/25], Train Loss: 0.002107, Validation Loss: 0.001833, lr = 0.00856, duration = 13.2253
+Epoch [6/25], Train Loss: 0.001613, Validation Loss: 0.001418, lr = 0.008199999999999999, duration = 13.2784
+Epoch [7/25], Train Loss: 0.001277, Validation Loss: 0.001146, lr = 0.007839999999999998, duration = 13.2485
+Epoch [8/25], Train Loss: 0.001038, Validation Loss: 0.000949, lr = 0.007479999999999998, duration = 13.2156
+Epoch [9/25], Train Loss: 0.000866, Validation Loss: 0.000798, lr = 0.007119999999999998, duration = 13.2300
+Epoch [10/25], Train Loss: 0.000750, Validation Loss: 0.000675, lr = 0.006759999999999998, duration = 13.2623
+Epoch [11/25], Train Loss: 0.000624, Validation Loss: 0.000583, lr = 0.006399999999999998, duration = 13.2761
+Epoch [12/25], Train Loss: 0.000537, Validation Loss: 0.000503, lr = 0.006039999999999998, duration = 13.2337

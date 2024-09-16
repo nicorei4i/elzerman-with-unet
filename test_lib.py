@@ -106,7 +106,7 @@ def plot_unet(model, test_loader, model_dir, snr):
     
     snr = format_number(snr)
     for i in range(2):
-        fig, axs = plt.subplots(4, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
+        fig, axs = plt.subplots(4, 1, figsize=(20, 15), sharex=True)  # Create a figure with 4 subplots
 
         fig.suptitle('Validation Traces', fontweight='bold')
 
@@ -166,8 +166,8 @@ def plot_aenc(model, test_loader, model_dir, snr):
         axs[0].tick_params(labelbottom=False)
         axs[0].legend(loc='upper right')
         #plt.show(block=False)
-        axs[0].set_ylabel('Amplitude (a.u.)')
-        axs[1].set_ylabel('Occupation')
+        axs[1].set_ylabel('Amplitude (a.u.)')
+        axs[0].set_ylabel('Occupation')
         axs[2].set_ylabel('Probability')
         axs[2].set_xlabel('Index')
        
