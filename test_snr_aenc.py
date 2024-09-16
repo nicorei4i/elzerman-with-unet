@@ -15,8 +15,11 @@ from sklearn.preprocessing import MinMaxScaler
 import time
 from test_lib import get_snr, get_scores_aenc, save_scores, plot_aenc
 
+
+
+
 def main():
-    real_noise_switch = True
+    real_noise_switch = False
     if real_noise_switch:
         print('Using real noise')
     else:
@@ -196,8 +199,8 @@ def main():
     if real_noise_switch:
         noise_sigs = np.linspace(0.5, 5, 10)
     else: 
-        noise_sigs = np.linspace(0.1, 0.8, 10)
-
+        # noise_sigs = np.linspace(0.1, 0.8, 10)
+        noise_sigs = np.linspace(0.6, 0.8, 3)
 
     print('noise sigs: ', noise_sigs)
     for s in noise_sigs: 

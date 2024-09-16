@@ -24,6 +24,16 @@ from test_lib import get_snr, get_scores_unet
 mpl.rcParams.update({'figure.max_open_warning': 0})
 plt.ion()
 
+
+plt.rcParams['font.size'] = 20.0
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = 'Arial'
+plt.rcParams['font.weight'] = 'bold'
+plt.rcParams['axes.labelsize'] = 'medium'
+plt.rcParams['axes.labelweight'] = 'bold'
+plt.rcParams['axes.linewidth'] = 1.2
+plt.rcParams['lines.linewidth'] = 2.0
+
 def main():
     # Check if GPU is available
     print('GPU available: ', torch.cuda.is_available())
@@ -44,10 +54,10 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     trace_dir = os.path.join(current_dir, 'sim_traces')
     real_data_dir = os.path.join(current_dir, 'real_data')
-    # file_name = 'sim_read_traces_train_20k_pure'  
-    # val_name = 'sim_read_traces_val_pure'  
-    file_name = 'sim_read_traces_train_10k'  
+    file_name = 'sim_read_traces_val'  
     val_name = 'sim_read_traces_val'  
+    # file_name = 'sim_read_traces_train_10k'  
+    # val_name = 'sim_read_traces_val'  
     
     test_name = 'sliced_traces' 
     # test_whole_name = 'sliced_traces_whole' 
@@ -162,7 +172,7 @@ def main():
         train_losses = []
         val_losses = []
 
-        num_epochs = 25 
+        num_epochs = 1
         
         for epoch in range(num_epochs):  
             start_train = time.time()
@@ -268,21 +278,30 @@ def main():
         temp_dataset = SimDataset(hdf5_file_path, scale_transform=None, noise_transform=noise_transform_train, noise_before_scale=True)  
         temp_loader = DataLoader(temp_dataset, batch_size=data.shape[0], shuffle=True, num_workers=1, persistent_workers=True, pin_memory=True)
         snr = get_snr(temp_loader)
-        for i in range(5):
-            fig, axs = plt.subplots(4, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-            fig.suptitle(f'Validation Trace (snr = {snr:.2f}dB)')
+        for i in range(32):
+            fig, axs = plt.subplots(4, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
+            fig.suptitle(f'Validation Trace (snr = {snr:.2f}dB)', fontweight='bold')
             axs[1].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
             axs[1].tick_params(labelbottom=False)
             axs[2].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
             axs[2].set_ylim(-0.1, 1.1)
             axs[2].tick_params(labelbottom=False)
             axs[3].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
-            #axs[3].set_ylim(-0.1, 1.1)
+            axs[3].set_ylim(-0.1, 1.1)
             axs[0].plot(y[i].reshape(-1), label='Clean', color='mediumblue', linewidth=0.9)
             axs[0].set_ylim(-0.1, 1.1)
             axs[0].tick_params(labelbottom=False)
+
+            axs[0].set_ylabel('Occupation')
+            axs[1].set_ylabel('Amplitude (a.u.)')
+            axs[2].set_ylabel('Occupation')
+            axs[3].set_ylabel('Probability')
+            axs[3].set_xlabel('Index')
+            
+
+
             for ax in axs:
-                ax.legend()
+                ax.legend(loc='upper right')
                 #ax.set_ylim(-0.1, 1.1)
             #plt.show(block=False)
             plt.savefig(os.path.join(model_dir, f'unet_val_{i}.pdf'))  # Save each figure
@@ -302,8 +321,8 @@ def main():
         x = x.cpu().numpy()
         
         for i in range(50):
-            fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-            fig.suptitle('Test Trace')
+            fig, axs = plt.subplots(3, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
+            fig.suptitle('Test Trace', fontweight='bold')
             axs[0].plot(x[i].reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
             axs[0].tick_params(labelbottom=False)
             axs[1].plot(prediction_class[i], label='Denoised', color='mediumblue', linewidth=0.9)
@@ -312,8 +331,15 @@ def main():
             axs[2].plot(decoded_test_data[i, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
             axs[2].set_ylim(-0.1, 1.1)
             
+            axs[0].set_ylabel('Amplitude (a.u.)')
+            axs[1].set_ylabel('Occupation')
+            axs[2].set_ylabel('Occupation Probability')
+            axs[2].set_xlabel('Index')
+            
+
+
             for ax in axs:
-                ax.legend()
+                ax.legend(loc='upper right')
                 #ax.set_ylim(-0.1, 1.1)
             #plt.show(block=False)
             plt.savefig(os.path.join(model_dir, f'unet_test_{i}.pdf'))  # Save each figure
@@ -328,13 +354,17 @@ def main():
         x = x.cpu().numpy()
         
 
-        fig, axs = plt.subplots(3, 1, figsize=(15, 5), sharex=True)  # Create a figure with 4 subplots
-        fig.suptitle('Test Trace')
+        fig, axs = plt.subplots(3, 1, figsize=(20, 10), sharex=True)  # Create a figure with 4 subplots
+        fig.suptitle('Test Trace', fontweight='bold')
         axs[0].plot(x.reshape(-1), label='Noisy', color='mediumblue', linewidth=0.9)
         axs[0].tick_params(labelbottom=False)
         axs[1].plot(prediction_class[0], label='Denoised', color='mediumblue', linewidth=0.9)
         axs[1].tick_params(labelbottom=False)
         axs[2].plot(decoded_test_data[0, 1, :], label='$p(1)$', color='mediumblue', linewidth=0.9)
+        axs[0].set_ylabel('Amplitude (a.u.)')
+        axs[1].set_ylabel('Occupation')
+        axs[2].set_ylabel('Occupation Probability')
+        axs[2].set_xlabel('Index')
         for ax in axs:
             ax.legend()
             #ax.set_ylim(-0.1, 1.1)
